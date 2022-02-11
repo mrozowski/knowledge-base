@@ -4,10 +4,9 @@
   "description": "knowladgeDB",
   "main": "index.js",
   "scripts": {
-    "start": "parcel serve src/index.html",
-    "build": "cross-env NODE_ENV=production parcel build src/index.html --public-url .",
-    "deploy": "gh-pages -d dist",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "parcel public/index.html",
+    "predeploy": "rm -rf dist && parcel build public/index.html",
+    "deploy": "gh-pages -d dist"
   },
   "repository": {
     "type": "git",
@@ -23,6 +22,8 @@
   },
   "homepage": "https://github.com/mrozowski/knowledgeBase#readme",
   "devDependencies": {
+    "gh-pages": "^3.2.3",
+    "parcel-bundler": "^1.12.5",
     "typescript": "^4.5.5"
   }
 }
