@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "start": "parcel public/index.html",
-    "predeploy": "rm -rf dist && parcel build public/index.html",
+    "predeploy": "rm -rf dist && parcel build public/index.html --public-url .",
     "deploy": "gh-pages -d dist"
   },
   "repository": {
@@ -20,7 +20,7 @@
   "bugs": {
     "url": "https://github.com/mrozowski/knowledgeBase/issues"
   },
-  "homepage": "https://github.com/mrozowski/knowledgeBase#readme",
+  "homepage": "http://mrozowski.github.io/knowledgeBase",
   "devDependencies": {
     "gh-pages": "^3.2.3",
     "parcel-bundler": "^1.12.5",
