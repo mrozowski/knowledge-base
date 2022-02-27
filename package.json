@@ -25,5 +25,10 @@
     "gh-pages": "^3.2.3",
     "parcel-bundler": "^1.12.5",
     "typescript": "^4.5.5"
+  },
+  "dependencies": {
+    "@babel/polyfill": "^7.12.1",
+    "firebase": "^9.6.6",
+    "lit": "^2.1.3"
   }
 }

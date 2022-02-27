@@ -1,14 +1,19 @@
 {
     "compilerOptions": {
+        "experimentalDecorators": true,
         "module": "commonjs",
         "moduleResolution": "node",
         "newLine": "LF",
         "outDir": "dist",
         "rootDir": "./src",
-        "target": "es5",
+        "target": "es2017",
         "sourceMap": true,
         "declaration": true,
         "jsx": "preserve",
+        // "typeRoots": [
+        //     "./typings",
+        //     "./node_modules/@types/"
+        // ],
         "lib": [
             "es2017",
             "dom"
@@ -16,6 +21,7 @@
         "strict": true,
         "noUnusedLocals": true,
         "noUnusedParameters": true,
+        "noImplicitAny": false,
         "noImplicitReturns": true,
         "noFallthroughCasesInSwitch": true
     },
