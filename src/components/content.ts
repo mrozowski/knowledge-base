@@ -3,7 +3,9 @@ import { customElement, property } from 'lit/decorators.js';
 import './start/start'
 import './contact'
 import './about-me'
+import './start/issue-details'
 import { Datasource } from '../model/datasource';
+import { Issue } from '../model/issue';
 
 @customElement('content-page')
 export class Page extends LitElement {
@@ -13,17 +15,29 @@ export class Page extends LitElement {
     }
   `;
 
-  @property({ type: Number }) pageNumber: number = 1;
+  @property({ type: Number })
+  pageNumber: number = 1;
 
   @property({ type: Object })
   datasource!: Datasource;
 
+  @property()
+  issue!: Issue;
+
+  showIssueDetails = (details: Issue) => {
+    window.history.pushState("Details", "", "/details");
+    this.issue = details;
+    this.pageNumber = 2;
+
+  }
+
 
   render() {
+
     if (this.pageNumber == 1) {
-      return html`<start-page .datasource=${this.datasource}></start-page>`;
+      return html`<start-page .datasource=${this.datasource} .showDetails=${this.showIssueDetails}></start-page>`;
     } else if (this.pageNumber == 2) {
-      return html`<about-page></about-page>`;
+      return html`<issue-details .issue=${this.issue}></issue-details>`;
     }
     else if (this.pageNumber == 3) {
       return html`<contact-page></contact-page>`;

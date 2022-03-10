@@ -1,7 +1,8 @@
 export enum Category {
+    Java,
     Bash,
     CSS,
-    Java,
+    Web,
     SQL,
     Python,
     Android,

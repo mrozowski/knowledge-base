@@ -78,12 +78,14 @@ export class TopMenu extends LitElement {
       width: 100vw;
       height: 5rem;
       background-color: rgba(255, 255, 255, 0.06);
+      margin-bottom: 1.5rem;
     }
     .menu {
       display: flex;
       height: 100%;
       align-items: center;
-      padding: 0 1rem
+      padding: 0 1rem;
+      
     }
 
     button {
