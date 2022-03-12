@@ -7,18 +7,30 @@ import "./category-badge"
 import { ButtonType } from '../button';
 import { Datasource } from '../../model/datasource';
 import { MarkdownStyles } from '../../common/markdown-styles';
+import { Highlighter } from '../../common/highlight';
 
-var MarkdownIt = require('markdown-it');
-var hljs = require('highlight.js/lib/common');
+var markdownIt = require('markdown-it');
+var emoji = require('markdown-it-emoji');
+var subscript = require('markdown-it-sub');
 
 
 @customElement('issue-details')
 export class IssueDetails extends LitElement {
 
-    private md = new MarkdownIt({ html: true });
+    private md: any;
+
+    constructor() {
+        super();
+        this.md = new markdownIt({ typographer: true, linkify: true });
+        this.md.use(emoji);
+        this.md.use(subscript);
+    }
 
     @property()
     issue!: Issue;
+
+    @property()
+    goBack!: any;
 
     @property()
     description!: any;
@@ -30,24 +42,29 @@ export class IssueDetails extends LitElement {
         const descPromise = this.datasource.getFileContent(this.issue.description);
         descPromise.then(e => {
             const htmlTemplate = this.md.render(e);
-            this.description = html`${unsafeHTML(htmlTemplate)}`;
+
+            let highlightedCode = Highlighter.findAndHighlightCode(htmlTemplate)
+            this.description = html`${unsafeHTML(highlightedCode)}`;
         });
     }
 
     render() {
 
         return html`
-        <div class="issue-card-details">
-            <section>
-                <button-x type=${ButtonType.small} .text=${"Back"} @click=${()=> console.log("pam pam")}></button-x>
-                <category-badge .category=${Category[this.issue.category]}></category-badge>
-            </section>
+        <div class="container">
+            <div class="issue-card-details">
+                <section>
+                    <button-x type=${ButtonType.small} .text=${"Back"} @click=${() => this.goBack()}></button-x>
+                    <span class="created-date"> ${this.issue.createdAt.toLocaleDateString()} </span>
+                    <category-badge .category=${Category[this.issue.category]}></category-badge>
+                </section>
         
-            <h3 class="title">${this.issue.title}</h3>
-            <div id="markdown-viewer" class="markdown-body">
+                <h1 class="title">${this.issue.title}</h1>
+                <div id="markdown-viewer" class="markdown-body">
         
-                ${this.description}
+                    ${this.description}
         
+                </div>
             </div>
         </div>
         `
@@ -55,14 +72,16 @@ export class IssueDetails extends LitElement {
 
     static get styles() {
         return [css`
+        .container{
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
         .issue-card-details{
-            min-width: 35rem;
-            max-width: 50rem;
-            
+            max-width: 80rem;
             background-color: rgba(255, 255, 255, 0.06);
-            color: white;
+            color: var(--textColor);
             margin: 0.5rem auto;
-            padding: 0.5rem;
+            padding: 16px !important;
             border-radius: 0.5rem;
             box-shadow: -2px -2px 6px 2px rgba(255, 255, 255, 0.1), 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
         }
@@ -70,7 +89,40 @@ export class IssueDetails extends LitElement {
             display: flex;
             justify-content: space-between;
         }
-        `, MarkdownStyles.getStyles()];
+        .title{
+            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+        }
+        
+        button-x{
+            flex-grow: 1;
+        }
+
+        .created-date{
+            line-height: 2.6rem;
+            margin-right: 0.7rem;
+        }
+
+        @media (min-width: 768px){
+            .issue-card-details {
+
+                padding-right: 24px !important;
+                padding-left: 24px !important;
+            }
+        }
+
+        @media (min-width: 1012px){
+            .issue-card-details {
+                
+                
+                padding-right: 32px !important;
+                padding-left: 32px !important;
+            }
+       }
+       
+        
+        
+        
+        `, MarkdownStyles.getStyles(), Highlighter.getStyles()];
     }
 }
 

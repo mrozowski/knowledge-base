@@ -45,6 +45,7 @@ export class CategoryBadge extends LitElement {
             height: 2rem;
             color: white;
             text-align: center;
+            margin: 0.3rem;
             border-radius: 0.5rem;
             line-height: 2rem;
             font-size: 1em;

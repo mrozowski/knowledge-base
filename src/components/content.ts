@@ -29,13 +29,17 @@ export class Page extends LitElement {
     this.pageNumber = 2;
   }
 
+  showStartPage = () => {
+    this.pageNumber = 1;
+  }
+
 
   render() {
 
     if (this.pageNumber == 1) {
       return html`<start-page .datasource=${this.datasource} .showDetails=${this.showIssueDetails}></start-page>`;
     } else if (this.pageNumber == 2) {
-      return html`<issue-details .datasource=${this.datasource} .issue=${this.issue}></issue-details>`;
+      return html`<issue-details .datasource=${this.datasource} .issue=${this.issue} .goBack=${this.showStartPage}></issue-details>`;
     }
     else if (this.pageNumber == 3) {
       return html`<contact-page></contact-page>`;

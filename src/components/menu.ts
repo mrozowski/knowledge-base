@@ -75,7 +75,7 @@ export class TopMenu extends LitElement {
   static get styles() {
     return css`
     nav {
-      width: 100vw;
+      width: 100%;
       height: 5rem;
       background-color: rgba(255, 255, 255, 0.06);
       margin-bottom: 1.5rem;
@@ -84,17 +84,13 @@ export class TopMenu extends LitElement {
       display: flex;
       height: 100%;
       align-items: center;
-      padding: 0 1rem;
+      padding: 0 2rem;
       
     }
 
     button {
       height: 2rem;
       margin-left: 0.4rem;
-    }
-
-    span {
-
     }
 
     .search {

@@ -11,6 +11,7 @@ export class MarkdownStyles extends LitElement {
             --textColor: #d4dae0;
             --mutedTextColor: #8b949e;
             --gray: #313233;
+            --accentGray: #3f4041;
             --linkAccent: #58a6ff;
             --color-neutral-muted: rgba(110,118,129,0.4);
             --color-canvas-subtle: rgba(55, 55, 55, 0.4);
@@ -27,7 +28,7 @@ export class MarkdownStyles extends LitElement {
             height: 0.25em;
             padding: 0;
             margin: 24px 0;
-            background-color: var(--gray);
+            background-color: var(--accentGray);
             border: 0;
         }
 
@@ -61,7 +62,7 @@ export class MarkdownStyles extends LitElement {
         .markdown-body .highlight pre, .markdown-body pre {
             padding: 16px;
             overflow: auto;
-            font-size: 85%;
+            
             line-height: 1.45;
             background-color: var(--color-canvas-subtle);
             border-radius: 6px;
@@ -90,6 +91,12 @@ export class MarkdownStyles extends LitElement {
             border: 1px solid var(--gray);
         }
 
+        .markdown-body h1{
+            padding-bottom: 0.3em;
+            font-size: 2em;
+            border-bottom: 1px solid var(--gray);
+        }
+
         .markdown-body h2{
             padding-bottom: 0.3em;
             font-size: 1.5em;
@@ -99,6 +106,12 @@ export class MarkdownStyles extends LitElement {
         .markdown-body a {
             color: var(--linkAccent);
             text-decoration: none;
+        }
+
+        .markdown-body img {
+            max-width: 70vw;
+            box-sizing: content-box;
+            background-color: var(--color-canvas-default);
         }
         `;
     }

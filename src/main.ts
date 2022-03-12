@@ -8,7 +8,9 @@ import './components/content';
 @customElement('main-module')
 export class Main extends LitElement {
 
-  static styles = css`p { color: blue }`;
+  static styles = css`
+  p { color: blue }
+  `;
 
   @property()
   name = 'Somebody';
