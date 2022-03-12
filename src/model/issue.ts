@@ -7,7 +7,7 @@ export class Issue {
         readonly tags: string[],
         readonly views: number,
         readonly id: string,
-        readonly description: Text,
+        readonly description: string,
         readonly solution: Text,
         readonly isPublic: boolean
     ) { }

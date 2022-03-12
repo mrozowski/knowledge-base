@@ -25,6 +25,7 @@ export class Start extends LitElement {
         response.then((result) => {
             this.issues = result;
         });
+
     }
 
     render() {

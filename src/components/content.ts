@@ -9,11 +9,11 @@ import { Issue } from '../model/issue';
 
 @customElement('content-page')
 export class Page extends LitElement {
-  static styles = css`
-    :host {
-        
-    }
-  `;
+  // static styles = css`
+  //   :host {
+
+  //   }
+  // `;
 
   @property({ type: Number })
   pageNumber: number = 1;
@@ -25,10 +25,8 @@ export class Page extends LitElement {
   issue!: Issue;
 
   showIssueDetails = (details: Issue) => {
-    window.history.pushState("Details", "", "/details");
     this.issue = details;
     this.pageNumber = 2;
-
   }
 
 
@@ -37,7 +35,7 @@ export class Page extends LitElement {
     if (this.pageNumber == 1) {
       return html`<start-page .datasource=${this.datasource} .showDetails=${this.showIssueDetails}></start-page>`;
     } else if (this.pageNumber == 2) {
-      return html`<issue-details .issue=${this.issue}></issue-details>`;
+      return html`<issue-details .datasource=${this.datasource} .issue=${this.issue}></issue-details>`;
     }
     else if (this.pageNumber == 3) {
       return html`<contact-page></contact-page>`;

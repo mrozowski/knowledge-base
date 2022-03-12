@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, Firestore } from 'firebase/firestore/lite';
+import { getStorage, FirebaseStorage, getBytes, getDownloadURL getBlob, StorageReference, ref } from 'firebase/storage'
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
 
@@ -15,7 +16,12 @@ const firebaseConfig = {
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
+const store = getStorage(app);
 
+
+async function getFileText() {
+
+}
 
 async function getCategory(db: Firestore) {
   const categoryCollection = collection(db, 'category');
@@ -53,6 +59,12 @@ export class FirebaseApi implements Datasource {
     });
 
     return response;
+  }
+
+  async getFileContent(filePath: string): Promise<string> {
+    var reference: StorageReference = ref(store, filePath);
+    var result: Blob = await getBlob(reference);
+    return result.text();
   }
 
 }
