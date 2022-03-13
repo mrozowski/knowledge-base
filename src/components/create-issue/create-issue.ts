@@ -10,12 +10,17 @@ export class CreateIssue extends LitElement {
     @property({ type: Object })
     datasource!: Datasource;
 
-    storeFile = (file: Blob) => {
-        console.log("storeFile");
-        console.log(file);
-        let ref = this.datasource.storePicture(file, "someName2.png");
-        console.log(ref);
+    createUniqueFileName(): string {
+        // timestamp is good way to create unique name. However, if many people use website it might happend that two people upload file at this same time.
+        // then there will be issue on server side - duplication of file name. However, for now only I'll have access to upload files. So it's good enought.
+        let timestamp = Date.now();
+        return timestamp + ".png";
+    }
 
+    storeFile = (file: Blob): Promise<string> => {
+        let fileName = this.createUniqueFileName();
+        let ref = this.datasource.storePicture(file, fileName);
+        return ref;
     }
 
     render() {

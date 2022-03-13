@@ -68,12 +68,9 @@ export class FirebaseApi implements Datasource {
   }
 
   async storePicture(file: Blob, name: string): Promise<string> {
-    console.log("storePicture");
-
     let reference: StorageReference = ref(store, `issues/pictures/${name}`);
-    let result = uploadBytes(reference, file);
-
-    return (await result).ref.fullPath
+    let upload = uploadBytes(reference, file);
+    return getDownloadURL((await upload).ref);
   }
 
 }
