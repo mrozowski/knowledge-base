@@ -4,10 +4,9 @@ import { css, LitElement } from 'lit';
 // @customElement('category-badge')
 export class MarkdownStyles extends LitElement {
 
-
-    public static getStyles() {
+    public static getVariableStyles() {
         return css`
-        :host{
+         :host{
             --textColor: #d4dae0;
             --mutedTextColor: #8b949e;
             --gray: #313233;
@@ -16,6 +15,13 @@ export class MarkdownStyles extends LitElement {
             --color-neutral-muted: rgba(110,118,129,0.4);
             --color-canvas-subtle: rgba(55, 55, 55, 0.4);
         }
+        `
+    }
+    public static getStyles() {
+        return [
+            this.getVariableStyles(),
+            css`
+       
         .markdown-body{
             color: var(--textColor);
             font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
@@ -113,6 +119,6 @@ export class MarkdownStyles extends LitElement {
             box-sizing: content-box;
             background-color: var(--color-canvas-default);
         }
-        `;
+        `];
     }
 }

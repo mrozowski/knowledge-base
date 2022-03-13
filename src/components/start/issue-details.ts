@@ -1,30 +1,16 @@
 import { css, html, LitElement, PropertyValues } from 'lit';
-import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { customElement, property } from 'lit/decorators.js';
 import { Issue } from '../../model/issue';
 import { Category } from './category';
 import "./category-badge"
 import { ButtonType } from '../button';
 import { Datasource } from '../../model/datasource';
+import './markdown-viewer'
 import { MarkdownStyles } from '../../common/markdown-styles';
-import { Highlighter } from '../../common/highlight';
-
-var markdownIt = require('markdown-it');
-var emoji = require('markdown-it-emoji');
-var subscript = require('markdown-it-sub');
 
 
 @customElement('issue-details')
 export class IssueDetails extends LitElement {
-
-    private md: any;
-
-    constructor() {
-        super();
-        this.md = new markdownIt({ typographer: true, linkify: true });
-        this.md.use(emoji);
-        this.md.use(subscript);
-    }
 
     @property()
     issue!: Issue;
@@ -33,7 +19,7 @@ export class IssueDetails extends LitElement {
     goBack!: any;
 
     @property()
-    description!: any;
+    markdownDescription: any;
 
     @property({ type: Object })
     datasource!: Datasource;
@@ -41,10 +27,7 @@ export class IssueDetails extends LitElement {
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
         const descPromise = this.datasource.getFileContent(this.issue.description);
         descPromise.then(e => {
-            const htmlTemplate = this.md.render(e);
-
-            let highlightedCode = Highlighter.findAndHighlightCode(htmlTemplate)
-            this.description = html`${unsafeHTML(highlightedCode)}`;
+            this.markdownDescription = e;
         });
     }
 
@@ -53,6 +36,7 @@ export class IssueDetails extends LitElement {
         return html`
         <div class="container">
             <div class="issue-card-details">
+        
                 <section>
                     <button-x type=${ButtonType.small} .text=${"Back"} @click=${() => this.goBack()}></button-x>
                     <span class="created-date"> ${this.issue.createdAt.toLocaleDateString()} </span>
@@ -60,11 +44,7 @@ export class IssueDetails extends LitElement {
                 </section>
         
                 <h1 class="title">${this.issue.title}</h1>
-                <div id="markdown-viewer" class="markdown-body">
-        
-                    ${this.description}
-        
-                </div>
+                <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
             </div>
         </div>
         `
@@ -118,11 +98,7 @@ export class IssueDetails extends LitElement {
                 padding-left: 32px !important;
             }
        }
-       
-        
-        
-        
-        `, MarkdownStyles.getStyles(), Highlighter.getStyles()];
+        `, MarkdownStyles.getVariableStyles()];
     }
 }
 

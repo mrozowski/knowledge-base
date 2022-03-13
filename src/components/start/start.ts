@@ -9,7 +9,7 @@ import './issue-element'
 @customElement('start-page')
 export class Start extends LitElement {
 
-    static styles = css`.content-main{ display: flex; justify-content: center;} .issue{flex-grow: 1;}`
+    static styles = css`.content-main{ display: flex; justify-content: center; flex-direction: column;} .issue{flex-grow: 1;}`
 
     @property({ type: Object })
     datasource!: Datasource;
@@ -36,7 +36,7 @@ export class Start extends LitElement {
                 ${this.issues.map((issue) => html`<issue-element class="issue" .category=${Category[issue.category]}
                     .title=${issue.title} .author=${issue.author} .createdAt=${issue.createdAt} .description=${issue.description}
                     .solution=${issue.solution} .tags=${issue.tags} .id=${issue.id} .views=${issue.views}
-                    .isPublic=${issue.isPublic} @click=${() => this.showDetails(issue)}>
+                    .isPublic=${issue.isPublic} @click=${()=> this.showDetails(issue)}>
                 </issue-element>`)}
             </div>
             `;
