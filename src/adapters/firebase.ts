@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, Firestore } from 'firebase/firestore/lite';
-import { getStorage, FirebaseStorage, getBytes, getDownloadURL getBlob, StorageReference, ref } from 'firebase/storage'
+import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult } from 'firebase/storage'
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
 
@@ -62,9 +62,18 @@ export class FirebaseApi implements Datasource {
   }
 
   async getFileContent(filePath: string): Promise<string> {
-    var reference: StorageReference = ref(store, filePath);
-    var result: Blob = await getBlob(reference);
+    let reference: StorageReference = ref(store, filePath);
+    let result: Blob = await getBlob(reference);
     return result.text();
+  }
+
+  async storePicture(file: Blob, name: string): Promise<string> {
+    console.log("storePicture");
+
+    let reference: StorageReference = ref(store, `issues/pictures/${name}`);
+    let result = uploadBytes(reference, file);
+
+    return (await result).ref.fullPath
   }
 
 }

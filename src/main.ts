@@ -30,6 +30,7 @@ export class Main extends LitElement {
 
   addIssue = () => {
     console.log("Add a new issue");
+    this.page = 3;
   }
 
   searchIssue = (text: string) => {

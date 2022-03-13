@@ -4,6 +4,7 @@ import './start/start'
 import './contact'
 import './about-me'
 import './start/issue-details'
+import './create-issue/create-issue'
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
 
@@ -33,6 +34,10 @@ export class Page extends LitElement {
     this.pageNumber = 1;
   }
 
+  showIssueCreator() {
+    this.pageNumber = 3;
+  }
+
 
   render() {
 
@@ -42,7 +47,7 @@ export class Page extends LitElement {
       return html`<issue-details .datasource=${this.datasource} .issue=${this.issue} .goBack=${this.showStartPage}></issue-details>`;
     }
     else if (this.pageNumber == 3) {
-      return html`<contact-page></contact-page>`;
+      return html`<create-issue .datasource=${this.datasource}></create-issue>`;
     }
     return;
   }
