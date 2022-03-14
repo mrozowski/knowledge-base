@@ -8,7 +8,6 @@ export class Issue {
         readonly views: number,
         readonly id: string,
         readonly description: string,
-        readonly solution: Text,
         readonly isPublic: boolean
     ) { }
 }

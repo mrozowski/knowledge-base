@@ -53,7 +53,6 @@ export class FirebaseApi implements Datasource {
         issue.views,
         issue.id,
         issue.description,
-        issue.solution,
         issue.public
       ));
     });

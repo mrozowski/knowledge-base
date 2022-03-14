@@ -13,8 +13,11 @@ export class Highlighter extends LitElement {
         var end: number = 0;
 
         codeSyntaxIndex = page.indexOf(`<code class="language`, coursorIndex);
+        if (codeSyntaxIndex == -1) return page;
 
         do {
+            console.log(codeSyntaxIndex);
+
             start = page.indexOf(`>`, codeSyntaxIndex);
             end = page.indexOf(`</code>`, start);
 
@@ -25,9 +28,8 @@ export class Highlighter extends LitElement {
             //check if there is next language code
             coursorIndex = end + 1;
             codeSyntaxIndex = page.indexOf(`<code class="language`, coursorIndex);
-            if (codeSyntaxIndex != -1) {
-                isLanguageCodeFound = true;
-            }
+
+            codeSyntaxIndex != -1 ? isLanguageCodeFound = true : isLanguageCodeFound = false;
         }
         while (isLanguageCodeFound);
 

@@ -9,8 +9,10 @@ import './markdown-viewer'
 import { MarkdownStyles } from '../../common/markdown-styles';
 
 
+
 @customElement('issue-details')
 export class IssueDetails extends LitElement {
+
 
     @property()
     issue!: Issue;
@@ -25,6 +27,7 @@ export class IssueDetails extends LitElement {
     datasource!: Datasource;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
+        window.history.pushState("", "", `/${this.issue.id}`);
         const descPromise = this.datasource.getFileContent(this.issue.description);
         descPromise.then(e => {
             this.markdownDescription = e;
@@ -32,7 +35,6 @@ export class IssueDetails extends LitElement {
     }
 
     render() {
-
         return html`
         <div class="container">
             <div class="issue-card-details">
