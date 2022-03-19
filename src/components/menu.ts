@@ -32,12 +32,12 @@ export class TopMenu extends LitElement {
 
   pressedKey = (e: KeyboardEvent) => {
     // fix it later
-    if (e.code != undefined){
-      if (e.code === "Enter"){
+    if (e.code != undefined) {
+      if (e.code === "Enter") {
         //this.searchIssue(this.searchText);
       }
-    } else if (e.keyCode != undefined){
-      if (e.keyCode == 13){
+    } else if (e.keyCode != undefined) {
+      if (e.keyCode == 13) {
         //this.searchIssue(this.searchText);
       }
     }
@@ -64,7 +64,7 @@ export class TopMenu extends LitElement {
       <div class="menu">
         <span>It's top menu</span>
         ${this.searchBar()}
-        <add-button @click=${this.addIssue} class=${this.isLoggedIn ? ""  : "hidden" }></add-button>
+        <add-button @click=${() => this.addIssue()} class=${this.isLoggedIn ? "" : "hidden"}></add-button>
         <button-x @click=${this.showLoginPage} text="Login" .type=${ButtonType.standard}></button-x>
       </div>
     </nav>

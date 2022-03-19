@@ -7,48 +7,53 @@ import './start/issue-details'
 import './create-issue/create-issue'
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
+import { SearchTitleOption } from './start/searchOption';
 
 @customElement('content-page')
 export class Page extends LitElement {
-  // static styles = css`
-  //   :host {
-
-  //   }
-  // `;
 
   @property({ type: Number })
-  pageNumber: number = 1;
+  readonly page: Pages = Pages.MAIN;
 
   @property({ type: Object })
   datasource!: Datasource;
 
-  @property()
+  @property({ type: Object })
   issue!: Issue;
 
-  showIssueDetails = (details: Issue) => {
+  @property()
+  showIssueDetails: any
+
+  @property()
+  showStartPage: any
+
+  @property()
+  searchText: any
+
+  showDetails = (details: Issue) => {
     this.issue = details;
-    this.pageNumber = 2;
+    this.showIssueDetails();
   }
 
-  showStartPage = () => {
-    this.pageNumber = 1;
+  createSearchTitleOption(): SearchTitleOption {
+    return SearchTitleOption.searchByTitle(this.searchText);
   }
-
-  showIssueCreator() {
-    this.pageNumber = 3;
-  }
-
 
   render() {
-
-    if (this.pageNumber == 1) {
-      return html`<start-page .datasource=${this.datasource} .showDetails=${this.showIssueDetails}></start-page>`;
-    } else if (this.pageNumber == 2) {
+    if (this.page === Pages.DETAILS) {
       return html`<issue-details .datasource=${this.datasource} .issue=${this.issue} .goBack=${this.showStartPage}></issue-details>`;
     }
-    else if (this.pageNumber == 3) {
-      return html`<create-issue .datasource=${this.datasource}></create-issue>`;
+    else if (this.page === Pages.CREATOR) {
+      return html`<create-issue .datasource=${this.datasource} .goBack=${this.showStartPage}></create-issue>`;
     }
-    return;
+    else {
+      return html`<start-page .datasource=${this.datasource} .showDetails=${this.showDetails} .searchOption=${this.createSearchTitleOption()}></start-page>`;
+    }
   }
+}
+
+export enum Pages {
+  MAIN,
+  DETAILS,
+  CREATOR
 }

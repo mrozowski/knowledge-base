@@ -7,7 +7,7 @@ import { Button, ButtonType } from '../button';
 import { MarkdownCode as MdCode } from './markdown-code';
 
 @customElement('edit-section')
-export class Editor extends LitElement {
+export class MarkdownEditor extends LitElement {
 
     private cursor: number = 0;
     private defaultEditorHeight: number = 0;
@@ -16,6 +16,9 @@ export class Editor extends LitElement {
 
     @property()
     saveFileOnFly: any;
+
+    @property()
+    contentListener: any;
 
     firstUpdated() {
         this.defaultEditorHeight = window.innerHeight * 0.9;
@@ -64,12 +67,14 @@ export class Editor extends LitElement {
         target!.selectionStart = this.cursor;
         target!.selectionEnd = this.cursor;
         target!.focus();
+        this.textareaListener(target?.value);
     }
 
     insertLink() {
         let target = this.shadowRoot!.querySelector("textarea");
         this.insertLinkAtCursor(target, MdCode.link);
         target!.focus();
+        this.textareaListener(target?.value);
     }
 
     wrapCode(value: string) {
@@ -78,6 +83,7 @@ export class Editor extends LitElement {
         target!.selectionStart = this.cursor;
         target!.selectionEnd = this.cursor;
         target!.focus();
+        this.textareaListener(target?.value);
     }
 
 
@@ -103,7 +109,7 @@ export class Editor extends LitElement {
             </section>
         
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false"
-                @keypress=${(e) => this.autoGrow(e.target)} class=${this.isPreview ? "invisible" : ""}></textarea>
+                @keyup=${(e) => this.textareaListener(e.target.value)} class=${this.isPreview ? "invisible" : ""}></textarea>
         
             ${this.isPreview ? this.getPreview() : null}
         
@@ -119,7 +125,10 @@ export class Editor extends LitElement {
         }
 
         textarea{
-            margin-top: 0.5rem;
+
+            box-sizing: border-box; 
+            padding-top: 0.5rem;
+            border-radius: 0 0 0.5rem 0.5rem;
             width: 100%;
             max-width: 100%;
             height: 90vh;
@@ -251,8 +260,7 @@ export class Editor extends LitElement {
 
     }
 
-    private autoGrow = (element) => {
-
-
+    private textareaListener = (value) => {
+        this.contentListener(value);
     }
 }

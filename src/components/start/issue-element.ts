@@ -24,11 +24,8 @@ export class IssueElement extends LitElement {
     @property()
     id!: string;
 
-    @property({ type: Object })
-    description!: Text;
-
-    @property({ type: Object })
-    solution!: Text;
+    @property()
+    description!: string;
 
     @property({ type: Boolean })
     isPublic!: boolean;
@@ -44,7 +41,7 @@ export class IssueElement extends LitElement {
                 <h3 class="title">${this.title}</h3>
                 <p class="issue-date">${this.createdAt.toLocaleDateString()}</p>
             </section>
-            <p class="issue-content">${this.solution}</p>
+            <p class="issue-content"></p>
             <section>
                 <category-badge class="cat" .category=${this.category}></category-badge>
         

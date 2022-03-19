@@ -16,8 +16,6 @@ export class Highlighter extends LitElement {
         if (codeSyntaxIndex == -1) return page;
 
         do {
-            console.log(codeSyntaxIndex);
-
             start = page.indexOf(`>`, codeSyntaxIndex);
             end = page.indexOf(`</code>`, start);
 

@@ -41,6 +41,7 @@ export class IssueDetails extends LitElement {
         
                 <section>
                     <button-x type=${ButtonType.small} .text=${"Back"} @click=${() => this.goBack()}></button-x>
+                    <div class="separator"></div>
                     <span class="created-date"> ${this.issue.createdAt.toLocaleDateString()} </span>
                     <category-badge .category=${Category[this.issue.category]}></category-badge>
                 </section>
@@ -75,7 +76,7 @@ export class IssueDetails extends LitElement {
             font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
         }
         
-        button-x{
+        .separator{
             flex-grow: 1;
         }
 

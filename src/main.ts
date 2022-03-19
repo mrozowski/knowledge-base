@@ -3,7 +3,7 @@ import { html, css, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Config } from './config/configuration';
 import './components/menu';
-import './components/content';
+import { Pages } from './components/content';
 
 @customElement('main-module')
 export class Main extends LitElement {
@@ -15,12 +15,14 @@ export class Main extends LitElement {
   @property()
   name = 'Somebody';
 
+  @property()
+  searchText: string = ""
+
   @property({ type: Number })
-  page: number = 1;
+  page: Pages = Pages.MAIN;
 
   showStartPage = () => {
-    console.log("start page");
-    this.page = 1;
+    this.page = Pages.MAIN;
   }
 
   showLoginPage = () => {
@@ -30,20 +32,33 @@ export class Main extends LitElement {
 
   addIssue = () => {
     console.log("Add a new issue");
-    this.page = 3;
+    this.page = Pages.CREATOR;
+  }
+
+  showIssueDetails = () => {
+    this.page = Pages.DETAILS;
   }
 
   searchIssue = (text: string) => {
     console.log("Searching issue: " + text);
+    this.searchText = text;
   }
-
 
   render() {
     return html`
-    <top-menu .showStartPage=${this.showStartPage} .searchIssue=${this.searchIssue} .showLoginPage=${this.showLoginPage}
+    <top-menu 
+      .showStartPage=${this.showStartPage} 
+      .searchIssue=${this.searchIssue} 
+      .showLoginPage=${this.showLoginPage}
       .addIssue=${this.addIssue}>
     </top-menu>
-    <content-page .pageNumber=${this.page} .datasource=${Config.getDatasource()}></content-page>
+    <content-page 
+      .page=${this.page} 
+      .datasource=${Config.getDatasource()}
+      .showIssueDetails=${this.showIssueDetails}
+      .showStartPage=${this.showStartPage}
+      .searchText=${this.searchText}>
+    </content-page>
       `;
   }
 }
