@@ -5,6 +5,7 @@ import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MarkdownStyles } from '../../common/markdown-styles';
 import { Button, ButtonType } from '../button';
 import { MarkdownCode as MdCode } from './markdown-code';
+import { Styles } from '../../common/styles';
 
 @customElement('edit-section')
 export class MarkdownEditor extends LitElement {
@@ -118,7 +119,7 @@ export class MarkdownEditor extends LitElement {
     }
 
     static get styles() {
-        return [MarkdownStyles.getVariableStyles(), css`
+        return [Styles.VARIABLES, css`
 
         .editor-card{
             

@@ -1,10 +1,11 @@
-import { SearchTitleOption } from '../components/start/searchOption';
+import { SearchOption } from '../components/start/search-option';
 import { Issue } from './issue'
 
 export interface Datasource {
-    search(searchOption: SearchTitleOption): Promise<Issue[]>;
+    getPageSize(): number;
+    search(searchOption: SearchOption): Promise<Issue[]>
     getIssues(): Promise<Issue[]>;
-    getNextIssues(): Promise<Issue[]>;
+    getNextIssues(searchOption?: SearchOption): Promise<Issue[]>;
     getFileContent(filePath: string): Promise<string>;
     storePicture(file: Blob, name: string): Promise<string>
     uploadMarkdown(text: string, id: string): Promise<string>;

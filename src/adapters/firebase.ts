@@ -1,8 +1,8 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query } from 'firebase/firestore/lite';
 import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString } from 'firebase/storage'
 import { NoMoreIssuesHasBeenFound } from "../components/start/issues-exception";
-import { SearchTitleOption } from "../components/start/searchOption";
+import { DateOption, OrderBy, SearchOption } from "../components/start/search-option";
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
 import { Metadata } from "./metadata-creator";
@@ -28,49 +28,20 @@ async function getCategory(db: Firestore) {
   return categories.docs.map(doc => doc.data());
 }
 
+class FirebaseOrder {
+  constructor(
+    readonly field: string,
+    readonly order: OrderByDirection) { };
+}
+
 export class FirebaseApi implements Datasource {
 
   constructor(
-    private readonly pageSize: number = 3,
+    public readonly pageSize: number = 3,
     private lastDoc?: DocumentData) { }
 
-  async getIssues(): Promise<Issue[]> {
-    const issueCollection = collection(db, 'issues');
-    let customQuery = query(issueCollection, orderBy("created_at", "desc"), limit(this.pageSize));
-
-    const issues = await getDocs(customQuery);
-    this.lastDoc = issues.docs[issues.docs.length - 1];
-
-    const response = Array();
-
-    issues.forEach(issue => {
-      response.push(FirebaseApi.issueMapper(issue.data()))
-    });
-
-    return response;
-  }
-
-  async getNextIssues(): Promise<Issue[]> {
-    console.log(this.lastDoc);
-
-    if (this.lastDoc) {
-      const issueCollection = collection(db, 'issues');
-      let customQuery = query(issueCollection, orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
-      const issues = await getDocs(customQuery);
-      this.lastDoc = issues.docs[issues.docs.length - 1];
-      const response = Array();
-
-      issues.forEach(issue => {
-        response.push(FirebaseApi.issueMapper(issue.data()))
-      });
-
-      if (response.length == 0) {
-        throw new NoMoreIssuesHasBeenFound();
-      }
-
-      return response;
-    }
-    return []
+  getPageSize(): number {
+    return this.pageSize;
   }
 
   async getFileContent(filePath: string): Promise<string> {
@@ -106,15 +77,116 @@ export class FirebaseApi implements Datasource {
     });
   }
 
-  async search(searchOption: SearchTitleOption): Promise<Issue[]> {
+  async getIssues(): Promise<Issue[]> {
     const issueCollection = collection(db, 'issues');
-    const queryForTitle = query(issueCollection, where("metadata", "array-contains", searchOption.title));
-    const querySnapshot = await getDocs(queryForTitle);
+    let customQuery = query(issueCollection, orderBy("created_at", "desc"), limit(this.pageSize));
+
+    const issues = await getDocs(customQuery);
+    this.lastDoc = issues.docs[issues.docs.length - 1];
+
+    const response = Array();
+
+    issues.forEach(issue => {
+      response.push(FirebaseApi.issueMapper(issue.data()))
+    });
+
+    return response;
+  }
+
+  async getNextIssues(searchOption: SearchOption): Promise<Issue[]> {
+    if (this.lastDoc) {
+      const issueCollection = collection(db, 'issues');
+      let customQuery: any;
+      if (searchOption.isDefault()) {
+        customQuery = query(issueCollection, orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
+      } else {
+        const filters: QueryConstraint[] = this.createQueryConstraints(searchOption);
+        customQuery = query(issueCollection, ...filters, startAfter(this.lastDoc), limit(this.pageSize));
+      }
+
+      const issues = await getDocs(customQuery);
+      this.lastDoc = issues.docs[issues.docs.length - 1];
+      const response = Array();
+
+      issues.forEach(issue => {
+        response.push(FirebaseApi.issueMapper(issue.data()))
+      });
+
+      if (response.length == 0) {
+        throw new NoMoreIssuesHasBeenFound();
+      }
+
+      return response;
+    }
+    return []
+  }
+
+  async search(searchOption: SearchOption): Promise<Issue[]> {
+    const issueCollection = collection(db, 'issues');
+
+    const filters: QueryConstraint[] = this.createQueryConstraints(searchOption);
+    console.log(filters);
+
+    const firebaseQuery = query(issueCollection, ...filters, limit(this.pageSize));
+    // const firebaseQuery = query(issueCollection, orderBy("created_at", "desc"), where("metadata", "array-contains", "test"), limit(this.pageSize));
+    console.log(firebaseQuery);
+
+    return this.getQueryResponse(firebaseQuery);
+  }
+
+  private createQueryConstraints(searchOption: SearchOption): QueryConstraint[] {
+    const firebaseOrder = this.toFirebaseOrder(searchOption.order);
+    let filters: QueryConstraint[] = [];
+    console.log(searchOption);
+
+    if (searchOption.isDate()) {
+      filters.push(where("created_at", this.toFirebaseFilterSymbol(searchOption.date!.option), Timestamp.fromDate(searchOption.date!.date)));
+      console.log("data");
+
+    }
+    if (searchOption.isCategories()) {
+      console.log(searchOption.categories);
+
+      filters.push(where("category", "in", searchOption.categories))
+    }
+    if (searchOption.isTags() && searchOption.isTitle()) {
+      //Due to limitation of firebase we cannot use array-contains-any and array-contains in a single query :(
+      filters.push(where("tags", "in", searchOption.tags[0]))
+    } else if (searchOption.isTags() && !searchOption.isTitle()) {
+      filters.push(where("tags", "array-contains-any", searchOption.tags))
+    }
+    if (searchOption.isTitle()) {
+      filters.push(where("metadata", "array-contains", searchOption.title));
+    }
+
+    filters.push(orderBy(firebaseOrder.field, firebaseOrder.order));
+    return filters;
+  }
+
+  private async getQueryResponse(query: Query) {
+    const querySnapshot = await getDocs(query);
+    this.lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
+    console.log("download docs");
+
     const response = Array();
     querySnapshot.forEach((issues) => {
       response.push(FirebaseApi.issueMapper(issues.data()))
     });
     return response;
+  }
+
+  private toFirebaseOrder(order: OrderBy): FirebaseOrder {
+    switch (order) {
+      case "Date: Newest": return new FirebaseOrder("created_at", "desc");
+      case "Date: Oldest": return new FirebaseOrder("created_at", "asc");
+      case "Title: A..Z": return new FirebaseOrder("title", "asc");
+      case "Title: Z..A": return new FirebaseOrder("title", "desc");
+      case "Popularity: Highest": return new FirebaseOrder("views", "desc");
+    }
+  }
+
+  private toFirebaseFilterSymbol(option: DateOption): WhereFilterOp {
+    return option === DateOption.NEWER ? ">=" : "<=";
   }
 
   private static issueMapper(json) {
@@ -131,5 +203,7 @@ export class FirebaseApi implements Datasource {
     );
   }
 }
+
+
 
 

@@ -54,9 +54,29 @@ export class CategoryBadge extends LitElement {
         .java{
             background-color: #F8981D;
         }
-
         .sql{
-            background-color: #2f6d96;
+            background-color: #1D8FF8;
+        }
+        .css{
+            background-color: #1DDEF8;
+        }
+        .python{
+            background-color: #FFCC3C;
+        }
+        .bash{
+            background-color: #981DF8;
+        }
+        .web{
+            background-color: #3C1DF8;
+        }
+        .android{
+            background-color: #A4C739;
+        }
+        .servers{
+            background-color: #F81DBB;
+        }
+        .others{
+            background-color: #F81D1D;
         }
         `;
     }

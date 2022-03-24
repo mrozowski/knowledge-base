@@ -7,12 +7,11 @@ import { ButtonType } from '../button';
 import { Datasource } from '../../model/datasource';
 import './markdown-viewer'
 import { MarkdownStyles } from '../../common/markdown-styles';
-
+import { Styles } from '../../common/styles';
 
 
 @customElement('issue-details')
 export class IssueDetails extends LitElement {
-
 
     @property()
     issue!: Issue;
@@ -27,7 +26,7 @@ export class IssueDetails extends LitElement {
     datasource!: Datasource;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
-        window.history.pushState("", "", `/${this.issue.id}`);
+        window.history.pushState("", "", `details/${this.issue.id}`);
         const descPromise = this.datasource.getFileContent(this.issue.description);
         descPromise.then(e => {
             this.markdownDescription = e;
@@ -95,13 +94,11 @@ export class IssueDetails extends LitElement {
 
         @media (min-width: 1012px){
             .issue-card-details {
-                
-                
                 padding-right: 32px !important;
                 padding-left: 32px !important;
             }
        }
-        `, MarkdownStyles.getVariableStyles()];
+        `, Styles.VARIABLES];
     }
 }
 

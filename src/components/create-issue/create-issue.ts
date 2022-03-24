@@ -6,6 +6,7 @@ import { Issue } from '../../model/issue';
 import { Category } from '../start/category';
 import { v4 as uuidv4 } from 'uuid';
 import './markdown-editor'
+import { Styles } from '../../common/styles';
 
 
 @customElement('create-issue')
@@ -114,7 +115,7 @@ export class CreateIssue extends LitElement {
     }
 
     static get styles() {
-        return [MarkdownStyles.getVariableStyles(), css`
+        return [Styles.VARIABLES, css`
         .container{
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;

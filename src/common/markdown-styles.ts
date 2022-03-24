@@ -1,26 +1,12 @@
-import { css, LitElement } from 'lit';
+import { css } from 'lit';
+import { Styles } from './styles';
 
 
-// @customElement('category-badge')
-export class MarkdownStyles extends LitElement {
+export class MarkdownStyles extends Styles {
 
-    public static getVariableStyles() {
-        return css`
-         :host{
-            --textColor: #d4dae0;
-            --mutedTextColor: #8b949e;
-            --gray: #313233;
-            --accentGray: #3f4041;
-            --linkAccent: #58a6ff;
-            --color-neutral-muted: rgba(110,118,129,0.4);
-            --color-canvas-subtle: rgba(55, 55, 55, 0.4);
-        }
-        `
-    }
     public static getStyles() {
-        return [
-            this.getVariableStyles(),
-            css`
+        return [this.VARIABLES,
+        css`
        
         .markdown-body{
             color: var(--textColor);

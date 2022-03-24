@@ -5,7 +5,7 @@ import { Issue } from '../../model/issue';
 import { Category } from "./category";
 import './issue-element'
 import { NoMoreIssuesHasBeenFound } from './issues-exception';
-import { SearchTitleOption } from './searchOption';
+import { SearchOption } from './search-option';
 
 
 @customElement('start-page')
@@ -29,7 +29,7 @@ export class Start extends LitElement {
     showDetails: any;
 
     @property()
-    searchOption: SearchTitleOption = SearchTitleOption.DEFAULT;
+    searchOption: any;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
         const response = this.datasource.getIssues();
@@ -40,15 +40,21 @@ export class Start extends LitElement {
 
     updated(_changedProperties) {
         if (_changedProperties.has('searchOption')) {
-            if (this.searchOption && this.searchOption.isValid()) {
-                console.log("searching");
+            const old = _changedProperties.get('searchOption');
+            if (old && old != this.searchOption) {
+                console.log("send request");
                 const response = this.datasource.search(this.searchOption);
+                console.log(this.searchOption);
+
                 response.then(result => {
                     this.issues = result;
                     this.isMoreIssues = true;
-                });
-            }
+                })
+                    .catch(error => {
+                        console.log(error);
 
+                    });
+            }
         }
     }
 
@@ -62,12 +68,17 @@ export class Start extends LitElement {
 
     loadMore = () => {
         if (this.isMoreIssues) {
-            const response = this.datasource.getNextIssues();
+            const response = this.datasource.getNextIssues(this.searchOption);
             response.then((result) => {
                 result.forEach(e => {
                     this.issues.push(e);
                 })
-                this.isMoreIssues = true;
+                if (this.datasource.getPageSize() > result.length) {
+                    this.isMoreIssues = false;
+                } else {
+                    this.isMoreIssues = true;
+                }
+
                 this.requestUpdate('issues');
             }).catch(e => {
                 if (e instanceof NoMoreIssuesHasBeenFound) {
@@ -94,7 +105,7 @@ export class Start extends LitElement {
                     .id=${issue.id} 
                     .views=${issue.views}
                     .isPublic=${issue.isPublic} 
-                    @click=${() => this.showDetails(issue)}>
+                    .click=${() => this.showDetails(issue)}>
                 </issue-element>`)}
 
                 <div class="load-more" @click=${this.loadMore}>${this.isMoreIssues ? "Load more" : "No more documents found."}</div>

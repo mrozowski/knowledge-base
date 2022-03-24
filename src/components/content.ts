@@ -7,7 +7,7 @@ import './start/issue-details'
 import './create-issue/create-issue'
 import { Datasource } from '../model/datasource';
 import { Issue } from '../model/issue';
-import { SearchTitleOption } from './start/searchOption';
+import { SearchOption } from './start/search-option';
 
 @customElement('content-page')
 export class Page extends LitElement {
@@ -30,16 +30,36 @@ export class Page extends LitElement {
   @property()
   searchText: any
 
+  @property()
+  searchOption: any
+
   showDetails = (details: Issue) => {
     this.issue = details;
     this.showIssueDetails();
   }
 
-  createSearchTitleOption(): SearchTitleOption {
-    return SearchTitleOption.searchByTitle(this.searchText);
+  createSearchOption(): SearchOption {
+    let search = SearchOption.from(this.searchOption);
+    search.title = this.searchText;
+
+    console.log("here should be ok");
+    console.log(search);
+
+
+
+    // search.title = this.searchText;
+    // search.categories = this.searchOption.categories
+    // search.tags = this.searchOption.tags
+    // search.order = this.searchOption.order
+    // search.date = this.searchOption.data;
+
+
+
+    return search;
   }
 
   render() {
+
     if (this.page === Pages.DETAILS) {
       return html`<issue-details .datasource=${this.datasource} .issue=${this.issue} .goBack=${this.showStartPage}></issue-details>`;
     }
@@ -47,7 +67,7 @@ export class Page extends LitElement {
       return html`<create-issue .datasource=${this.datasource} .goBack=${this.showStartPage}></create-issue>`;
     }
     else {
-      return html`<start-page .datasource=${this.datasource} .showDetails=${this.showDetails} .searchOption=${this.createSearchTitleOption()}></start-page>`;
+      return html`<start-page .datasource=${this.datasource} .showDetails=${this.showDetails} .searchOption=${this.createSearchOption()}></start-page>`;
     }
   }
 }

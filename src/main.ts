@@ -4,6 +4,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { Config } from './config/configuration';
 import './components/menu';
 import { Pages } from './components/content';
+import { SearchOption } from './components/start/search-option';
 
 @customElement('main-module')
 export class Main extends LitElement {
@@ -16,7 +17,10 @@ export class Main extends LitElement {
   name = 'Somebody';
 
   @property()
-  searchText: string = ""
+  searchTitle: string = "";
+
+  @property()
+  searchOption: SearchOption = SearchOption.DEFAULT;
 
   @property({ type: Number })
   page: Pages = Pages.MAIN;
@@ -41,7 +45,14 @@ export class Main extends LitElement {
 
   searchIssue = (text: string) => {
     console.log("Searching issue: " + text);
-    this.searchText = text;
+    this.searchTitle = text;
+  }
+
+  filterIssues = (options: SearchOption) => {
+    console.log("search options: ");
+    console.log(options);
+    this.searchOption = options;
+    this.requestUpdate("searchOption");
   }
 
   render() {
@@ -50,14 +61,16 @@ export class Main extends LitElement {
       .showStartPage=${this.showStartPage} 
       .searchIssue=${this.searchIssue} 
       .showLoginPage=${this.showLoginPage}
-      .addIssue=${this.addIssue}>
+      .addIssue=${this.addIssue}
+      .filterIssues=${this.filterIssues}>
     </top-menu>
     <content-page 
       .page=${this.page} 
       .datasource=${Config.getDatasource()}
       .showIssueDetails=${this.showIssueDetails}
       .showStartPage=${this.showStartPage}
-      .searchText=${this.searchText}>
+      .searchText=${this.searchTitle}
+      .searchOption=${this.searchOption}>
     </content-page>
       `;
   }

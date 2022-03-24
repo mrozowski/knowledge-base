@@ -33,10 +33,13 @@ export class IssueElement extends LitElement {
     @property({ type: Number })
     category!: Category;
 
+    @property()
+    click: any;
+
     render() {
 
         return html`
-        <div class="issue-card">
+        <div class="issue-card" @click=${this.click}>
             <section>
                 <h3 class="title">${this.title}</h3>
                 <p class="issue-date">${this.createdAt.toLocaleDateString()}</p>
@@ -61,12 +64,12 @@ export class IssueElement extends LitElement {
             min-width: 35rem;
             max-width: 50rem;
             
-            background-color: #363636;
+            background-color: rgba(255, 255, 255, 0.06);
             color: white;
             margin: 0.5rem auto;
             padding: 0.5rem;
             border-radius: 0.5rem;
-            box-shadow: -2px -2px 6px 2px rgba(162, 162, 162, 0.30), 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
+            box-shadow: -2px -2px 6px 2px rgba(255, 255, 255, 0.1), 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
             transition: all ease 500ms;
         }
 

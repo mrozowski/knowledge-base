@@ -1,7 +1,13 @@
 import { html, LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
+import { Icons } from '../common/icons';
 import { ButtonType } from "./button"
+import './popup/popup-filter';
 import "./add-button"
+import { FilterPopup } from './popup/popup-filter';
+
+
 
 @customElement('top-menu')
 export class TopMenu extends LitElement {
@@ -30,6 +36,9 @@ export class TopMenu extends LitElement {
   @property()
   searchIssue?: any;
 
+  @property()
+  filterIssues: any;
+
   pressedKey = (e: KeyboardEvent) => {
     // fix it later
     if (e.code != undefined) {
@@ -41,6 +50,14 @@ export class TopMenu extends LitElement {
         //this.searchIssue(this.searchText);
       }
     }
+  }
+
+
+
+  openFilterBox = () => {
+    const popupBox = this.shadowRoot?.querySelector('popup-filter') as FilterPopup;
+    popupBox.clickAction = this.filterIssues;
+    popupBox.open = true;
   }
 
 
@@ -57,17 +74,23 @@ export class TopMenu extends LitElement {
     `
   }
 
+
+
   render() {
     return html`
-    
+     <popup-filter></popup-filter> 
     <nav>
       <div class="menu">
         <span>It's top menu</span>
+        <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.filter)}`}  @click=${this.openFilterBox}  title="filter"></button-x>
+               
         ${this.searchBar()}
         <add-button @click=${() => this.addIssue()} class=${this.isLoggedIn ? "" : "hidden"}></add-button>
         <button-x @click=${this.showLoginPage} text="Login" .type=${ButtonType.standard}></button-x>
       </div>
     </nav>
+
+   
     `;
   }
 
