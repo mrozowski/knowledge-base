@@ -6,7 +6,6 @@ import "./category-badge"
 import { ButtonType } from '../button';
 import { Datasource } from '../../model/datasource';
 import './markdown-viewer'
-import { MarkdownStyles } from '../../common/markdown-styles';
 import { Styles } from '../../common/styles';
 
 
@@ -27,52 +26,102 @@ export class IssueDetails extends LitElement {
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
         window.history.pushState("", "", `details/${this.issue.id}`);
-        const descPromise = this.datasource.getFileContent(this.issue.description);
+        const descPromise = this.datasource.getFileContent(this.issue.content);
         descPromise.then(e => {
             this.markdownDescription = e;
         });
     }
 
+
     render() {
         return html`
         <div class="container">
-            <div class="issue-card-details">
-        
+        <div class="card">
+                <div class="top-bar">
+                    <button-x .text=${"Back"} @click=${() => this.goBack()}></button-x>
+                    <div class="separator"></div>
+                    <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => this.goBack()}></button-x>
+                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => this.goBack()}></button-x>
+                </div>
+            <div class="card-content">
+                <h1 class="title">${this.issue.title}</h1>
+                
                 <section>
-                    <button-x type=${ButtonType.small} .text=${"Back"} @click=${() => this.goBack()}></button-x>
+                    <span class="tags"> ${this.issue.tags} </span>
                     <div class="separator"></div>
                     <span class="created-date"> ${this.issue.createdAt.toLocaleDateString()} </span>
                     <category-badge .category=${Category[this.issue.category]}></category-badge>
                 </section>
         
-                <h1 class="title">${this.issue.title}</h1>
-                <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
+                <div class="viewer">
+                    <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
+                </div>
+                <p class="views">${this.issue.views} views</p>
             </div>
         </div>
         `
     }
 
     static get styles() {
-        return [css`
+        return [Styles.VARIABLES, Styles.LARGE_CARD, css`
         .container{
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
         }
-        .issue-card-details{
-            max-width: 80rem;
-            background-color: rgba(255, 255, 255, 0.06);
-            color: var(--textColor);
-            margin: 0.5rem auto;
-            padding: 16px !important;
-            border-radius: 0.5rem;
-            box-shadow: -2px -2px 6px 2px rgba(255, 255, 255, 0.1), 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
+        .card-content{
+            padding-right: 18px !important;
+            padding-left: 18px !important;
+            padding-bottom: 18px !important;
         }
+
+        .top-bar{
+            background-color: var(--card-background);
+            height: 3rem;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            flex-direction: row;
+            display: flex;
+         }
+         
         section{
             display: flex;
-            justify-content: space-between;
+            align-items: center;
+            
+            border-bottom: solid 3px var(--card-background-lighter);
+            padding-bottom: 1rem;
         }
+
+        .viewer{
+            margin: 0 1.5rem;
+            
+        }
+
+        section > span{
+            font-weight: 300;
+            color: var(--secondary-text-color);
+        }
+
+        .tags{
+            margin-left: 1rem;
+        }
+
+        category-badge{
+            margin-right: 1rem;
+        }
+
+        .views{
+            margin-bottom: 0;
+            margin-right: 1rem;
+            text-align: right;
+            color: var(--secondary-text-color);
+        }
+
         .title{
-            font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Helvetica,Arial,sans-serif,"Apple Color Emoji","Segoe UI Emoji";
+            margin-left: 1rem;
+            margin-right: 1rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 400;
         }
         
         .separator{
@@ -80,8 +129,7 @@ export class IssueDetails extends LitElement {
         }
 
         .created-date{
-            line-height: 2.6rem;
-            margin-right: 0.7rem;
+            margin-right: 1rem;
         }
 
         @media (min-width: 768px){
@@ -98,7 +146,7 @@ export class IssueDetails extends LitElement {
                 padding-left: 32px !important;
             }
        }
-        `, Styles.VARIABLES];
+        `];
     }
 }
 

@@ -7,12 +7,13 @@ import { Category } from '../start/category';
 import { v4 as uuidv4 } from 'uuid';
 import './markdown-editor'
 import { Styles } from '../../common/styles';
+import { ButtonType } from '../button';
 
 
 @customElement('create-issue')
 export class CreateIssue extends LitElement {
 
-    private content: string = "";
+    private content: string = CreateIssue.getDefaultTemplate();
     private tags: string[] = new Array();
 
     @property({ type: Object })
@@ -51,13 +52,13 @@ export class CreateIssue extends LitElement {
     }
 
     submitIssue() {
-        console.log("submitting a new issue");
-        let author = "funner";
-        let category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
-        let title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
-        let tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
-        let parsedTags: string[] = tags.value.split("/[\s,]+/");
-        let id: string = uuidv4();
+        const author = "funner";
+        const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
+        const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
+        const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const parsedTags: string[] = tags.value.split("/[\s,]+/");
+        const id: string = uuidv4();
+        const description = this.parseDescription(this.content);
 
         let mdUrl = this.datasource.uploadMarkdown(this.content, id);
 
@@ -71,6 +72,7 @@ export class CreateIssue extends LitElement {
                 0,
                 id,
                 md,
+                description,
                 true
             );
 
@@ -81,6 +83,24 @@ export class CreateIssue extends LitElement {
         })
     }
 
+    parseDescription(content: string) {
+        const descriptionHeader = "## Description";
+        const descriptionHeaderIndex = content.indexOf(descriptionHeader);
+
+        const descriptionStart = descriptionHeaderIndex + descriptionHeader.length + 1;
+        const descriptionEnd = content.indexOf("\n\n", descriptionStart);
+
+        let code = content.substring(descriptionStart, descriptionEnd);
+        const wrongElement = code.indexOf("\n#", descriptionStart);
+        if (wrongElement != -1) {
+            code = code.substring(0, wrongElement);
+        }
+        if (code.length > 320) {
+            return code.substring(0, 320);
+        }
+        return code;
+    }
+
     tagListener(value: string) {
 
     }
@@ -88,69 +108,99 @@ export class CreateIssue extends LitElement {
     render() {
         return html`
         <div class="container">
-            <div class="issue-card-creator">
-                <section>
-                    <button-x .text=${"Cancel"} @click=${() => this.goBack()}></button-x>
-                    <button-x .text=${"Submit"} @click=${this.submitIssue}></button-x>
-                </section>
-                <div class="options">
-                <label>Title: 
-                    <input name="title" id="title-input"/>
-                </label>
-                <label>Category:
-                    <select id="category-list"></select>
-                </label>
-                <div></div>
-                <label>Tags:  
-                    <input  type="text" id="tag-input"/>
-                </label>
+            <div class="card">
+                <div class="top-bar">
+                        <button-x .text=${"Cancel"} @click=${() => this.goBack()} .type=${ButtonType.SECONDARY}></button-x>
+                        <button-x .text=${"Submit"} @click=${this.submitIssue}></button-x>
                 </div>
-                <edit-section .saveFileOnFly=${this.storeFile} .contentListener=${this.updateContent}></edit-section>
+                <div class="card-content">
+                    <div class="options">
+                        <label>Title 
+                            <input name="title" id="title-input"/>
+                        </label>
+                        <label>Tags  
+                            <input  type="text" id="tag-input"/>
+                        </label>
+                        <label>Category
+                            <select id="category-list" class="select-card"></select>
+                        </label> 
+                    </div>
+                    <edit-section .saveFileOnFly=${this.storeFile} .contentListener=${this.updateContent} .defaultContent=${this.content}></edit-section>
+                </div>
             </div>
-
-            
         </div>
         `
 
     }
 
     static get styles() {
-        return [Styles.VARIABLES, css`
+        return [Styles.VARIABLES, Styles.LARGE_CARD, css`
+
+        .select-card{
+            background-color: #35333b;
+            color: var(--textColor);
+            border: none;
+            padding: 0.3rem;
+            width: 8em;
+        }
+        .select-card:focus{
+            outline: none;
+        }
+
+
         .container{
+            
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
         }
-        .issue-card-creator{
-            max-width: 80rem;
-            background-color: rgba(255, 255, 255, 0.06);
-            color: var(--textColor);
-            margin: 0.5rem auto;
-            padding: 16px !important;
-            border-radius: 0.5rem;
-            box-shadow: -2px -2px 6px 2px rgba(255, 255, 255, 0.1), 2px 2px 6px 2px rgba(0, 0, 0, 0.25);
-        }
-        section{
-            display: flex;
-            justify-content: space-between;
-            border-bottom: 2px solid var(--gray);
-            padding-bottom: 1.3rem;
-            margin-bottom: 1.3rem;
+
+        .card-content{
+            padding-right: 18px !important;
+            padding-left: 18px !important;
+            padding-bottom: 18px !important;
         }
 
+        .top-bar{
+            background-color: var(--card-background);
+            height: 3rem;
+            justify-content: space-between;
+            align-items: center;
+            border-radius: 8px 8px 0 0;
+            flex-direction: row;
+            display: flex;
+         }
+
         .options{
-            border-bottom: 2px solid var(--gray);
-            padding-bottom: 1.3rem;
-            margin-bottom: 1.3rem;
+            padding: 1.3rem 0 1.8rem 0;
+        }
+
+        input, label {
+            display:block;
+        }
+
+        label{
+            color: var(--secondary-text-color);
+            font-size: 80%;
+        }
+
+        label:not(:first-of-type){
+            margin-top: 0.8rem;
         }
 
         input{
-            background-color: transparent;
+            background-color: var(--card-background);
             border: none;
+            border-radius: 0 8px 8px 8px;
             outline: none;
             resize: none;
             color: var(--textColor);
-            margin: 0 0 0.5rem 0.5rem;
-            width: 88%;
+            width: 100%;
+            margin-top: 0.2rem;
+            height: 2.5rem;
+            padding: 0 0.5rem;
+            -moz-box-sizing: border-box; 
+            -webkit-box-sizing: border-box; 
+            box-sizing: border-box; 
         }
 
         #title-input{
@@ -158,7 +208,8 @@ export class CreateIssue extends LitElement {
         }
 
         #category-list{
-            margin-bottom: 0.5rem;
+            margin-left: 0.5rem;
+            margin-top: 0.5rem;
         }
 
         .created-date{
@@ -167,26 +218,34 @@ export class CreateIssue extends LitElement {
         }
 
         @media (min-width: 768px){
-            .issue-card-creator {
+            .card-content {
 
                 padding-right: 24px !important;
                 padding-left: 24px !important;
+                padding-bottom: 24px !important;
             }
 
-            input{
-                width: 92%;
-            }
+            
         }
 
         @media (min-width: 1012px){
-            .issue-card-creator {
+            .card-content {
                 padding-right: 32px !important;
                 padding-left: 32px !important;
+                padding-bottom: 32px !important;
             }
 
-            input{
-                width: 94%;
-            }
+            
        }`]
+    }
+
+    private static getDefaultTemplate(): string {
+        return `## Description
+
+
+
+## Solution
+
+`;
     }
 }

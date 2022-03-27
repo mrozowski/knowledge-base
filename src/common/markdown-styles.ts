@@ -20,14 +20,14 @@ export class MarkdownStyles extends Styles {
             height: 0.25em;
             padding: 0;
             margin: 24px 0;
-            background-color: var(--accentGray);
+            background-color: var(--card-background-lighter);
             border: 0;
         }
 
         .markdown-body blockquote {
             padding: 0 1em;
             color: var(--mutedTextColor);
-            border-left: 0.25em solid var(--gray);
+            border-left: 0.25em solid var(--card-background-lighter);
             margin: 0;
         }
 
@@ -56,7 +56,7 @@ export class MarkdownStyles extends Styles {
             overflow: auto;
             
             line-height: 1.45;
-            background-color: var(--color-canvas-subtle);
+            background-color: var(--card-background);
             border-radius: 6px;
         }
 
@@ -80,19 +80,19 @@ export class MarkdownStyles extends Styles {
 
         .markdown-body table th, .markdown-body table td {
             padding: 6px 13px;
-            border: 1px solid var(--gray);
+            border: 1px solid var(--card-background-lighter);
         }
 
         .markdown-body h1{
             padding-bottom: 0.3em;
             font-size: 2em;
-            border-bottom: 1px solid var(--gray);
+            border-bottom: 1px solid var(--card-background-lighter);
         }
 
         .markdown-body h2{
             padding-bottom: 0.3em;
             font-size: 1.5em;
-            border-bottom: 1px solid var(--gray);
+            border-bottom: 1px solid var(--card-background-lighter);
         }
 
         .markdown-body a {

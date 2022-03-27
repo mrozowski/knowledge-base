@@ -6,6 +6,7 @@ export enum Category {
     SQL,
     Python,
     Android,
+    AI,
     Servers,
     Other
 }

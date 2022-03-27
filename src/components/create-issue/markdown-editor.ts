@@ -11,7 +11,6 @@ import { Styles } from '../../common/styles';
 export class MarkdownEditor extends LitElement {
 
     private cursor: number = 0;
-    private defaultEditorHeight: number = 0;
     private isPreview: boolean = false;
     private content: any;
 
@@ -21,13 +20,27 @@ export class MarkdownEditor extends LitElement {
     @property()
     contentListener: any;
 
+    @property()
+    defaultContent: any;
+
     firstUpdated() {
-        this.defaultEditorHeight = window.innerHeight * 0.9;
+
         this.addEventListener('paste', this.pasteHandler);
     }
 
+    updated(_changedProperties) {
+        if (_changedProperties.has('defaultContent')) {
+            const old = _changedProperties.get('defaultContent');
+            if (old != this.defaultContent) {
+                const target = this.shadowRoot!.querySelector("textarea");
+                if (target) target.value = this.defaultContent;
+            }
+        }
+    }
+
+
+
     pasteHandler = (e) => {
-        console.log("event handled");
         //later handle loading text before picture is uploaded and then remove that line from textarea
         //this.insertTextAtCursor(e.target.shadowRoot.querySelector("textarea"), "loading image...");
         let items = e.clipboardData.items;
@@ -92,28 +105,28 @@ export class MarkdownEditor extends LitElement {
         return html`
         <div class="editor-card">
             <section>
-                <button-x .text=${"Edit"}  class="edit" @click=${() => this.showEditor()}></button-x>
-                <button-x .text=${"Preview"} @click=${() => this.showPreview()}></button-x>
+                <button-x .text=${"Edit"}    @click=${() => this.showEditor()}  .type=${this.isPreview ? ButtonType.SECONDARY : ButtonType.STANDARD} class="edit"></button-x>
+                <button-x .text=${"Preview"} @click=${() => this.showPreview()} .type=${this.isPreview ? ButtonType.STANDARD : ButtonType.SECONDARY} class="preview-btn"></button-x>
                 <div class="separator"></div>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.bold)}`}          @click=${() => this.wrapCode(MdCode.bold)}    title="bold" ></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.italic)}`}        @click=${() => this.wrapCode(MdCode.italic)}  title="italic"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.strokethrough)}`} @click=${() => this.wrapCode(MdCode.strikethrought)} title="strokethrough"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.quote)}`}         @click=${() => this.insertCode(MdCode.quote)} title="quote" ></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.code)}`}          @click=${() => this.wrapCode(MdCode.code)} title="code"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.link)}`}          @click=${() => this.insertLink()} title="insert link"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.list)}`}          @click=${() => this.insertCode(MdCode.bulletList)} title="bullet list"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.numericList)}`}   @click=${() => this.insertCode(MdCode.numberedList)} title="numbered list"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.subscript)}`}     @click=${() => this.wrapCode(MdCode.subscript)} title="subscript"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.superscript)}`}   @click=${() => this.wrapCode(MdCode.superscript)} title="superscript"></button-x>
-                <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.table)}`}         @click=${() => this.insertCode(MdCode.table)} title="table" ></button-x>
-        
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.bold)}`}          @click=${() => this.wrapCode(MdCode.bold)}    title="bold" ></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.italic)}`}        @click=${() => this.wrapCode(MdCode.italic)}  title="italic"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.strokethrough)}`} @click=${() => this.wrapCode(MdCode.strikethrought)} title="strokethrough"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.quote)}`}         @click=${() => this.insertCode(MdCode.quote)} title="quote" ></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.code)}`}          @click=${() => this.wrapCode(MdCode.code)} title="code"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.link)}`}          @click=${() => this.insertLink()} title="insert link"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.list)}`}          @click=${() => this.insertCode(MdCode.bulletList)} title="bullet list"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.numericList)}`}   @click=${() => this.insertCode(MdCode.numberedList)} title="numbered list"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.subscript)}`}     @click=${() => this.wrapCode(MdCode.subscript)} title="subscript"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.superscript)}`}   @click=${() => this.wrapCode(MdCode.superscript)} title="superscript"></button-x>
+                <button-x .type=${ButtonType.SMALL} .text=${html`${unsafeHTML(Icons.table)}`}         @click=${() => this.insertCode(MdCode.table)} title="table" ></button-x>
             </section>
         
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false"
                 @keyup=${(e) => this.textareaListener(e.target.value)} class=${this.isPreview ? "invisible" : ""}></textarea>
         
-            ${this.isPreview ? this.getPreview() : null}
-        
+            <div class=${this.isPreview ? "preview" : "invisible"}>
+                ${this.isPreview ? this.getPreview() : null}
+            </div>
         </div>
         `
     }
@@ -126,34 +139,50 @@ export class MarkdownEditor extends LitElement {
         }
 
         textarea{
-
             box-sizing: border-box; 
-            padding-top: 0.5rem;
-            border-radius: 0 0 0.5rem 0.5rem;
+            padding: 1rem 0.8rem;
+            border-radius: 0 0 8px 8px;
             width: 100%;
             max-width: 100%;
             height: 90vh;
+            font-size: 16px;
             border: none;
             outline: none;
             resize: none;
             overflow: hidden;
             line-height: 1.3rem;
-            background-color: transparent;
+            background-color: rgba(0, 0, 0, 0.14);
             color: var(--textColor);
             font-family: Consolas, "Courier New", monospace;
         }
+
+        .preview{
+            padding: 0 1rem;
+            min-height: 90vh;
+        }
+
         section{
             display: flex;
+            padding: 0.5rem 0;
+            border-radius: 8px 8px 0 0;
             justify-content: flex-start;
-            padding-bottom: 1.3rem;
-            border-bottom: 2px solid var(--gray)
+            background-color: var(--main-accent-color);
+            box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        section > button-x:not(:last-of-type){
+            border-right: solid 2px var(--card-background-lighter);
+        }
+
+        .preview-btn{
+            border-right: none !important;
         }
 
         
-        button-x{
-            margin-right: 0.5rem;
+
+        section > button-x:last-of-type{
+            margin-right: 0.3rem;
         }
-        
     
         .edit{
             margin-right: 1rem;

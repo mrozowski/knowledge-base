@@ -41,20 +41,6 @@ export class Page extends LitElement {
   createSearchOption(): SearchOption {
     let search = SearchOption.from(this.searchOption);
     search.title = this.searchText;
-
-    console.log("here should be ok");
-    console.log(search);
-
-
-
-    // search.title = this.searchText;
-    // search.categories = this.searchOption.categories
-    // search.tags = this.searchOption.tags
-    // search.order = this.searchOption.order
-    // search.date = this.searchOption.data;
-
-
-
     return search;
   }
 

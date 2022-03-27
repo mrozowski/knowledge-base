@@ -5,6 +5,7 @@ import { Config } from './config/configuration';
 import './components/menu';
 import { Pages } from './components/content';
 import { SearchOption } from './components/start/search-option';
+import { Datasource } from './model/datasource';
 
 @customElement('main-module')
 export class Main extends LitElement {
@@ -12,7 +13,7 @@ export class Main extends LitElement {
   static styles = css`
   p { color: blue }
   `;
-
+  private datasource: Datasource = Config.getDatasource();
   @property()
   name = 'Somebody';
 
@@ -49,8 +50,6 @@ export class Main extends LitElement {
   }
 
   filterIssues = (options: SearchOption) => {
-    console.log("search options: ");
-    console.log(options);
     this.searchOption = options;
     this.requestUpdate("searchOption");
   }
@@ -66,7 +65,7 @@ export class Main extends LitElement {
     </top-menu>
     <content-page 
       .page=${this.page} 
-      .datasource=${Config.getDatasource()}
+      .datasource=${this.datasource}
       .showIssueDetails=${this.showIssueDetails}
       .showStartPage=${this.showStartPage}
       .searchText=${this.searchTitle}

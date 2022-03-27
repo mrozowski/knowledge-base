@@ -13,6 +13,6 @@ body, html{
     
     overflow-x: hidden;
     overflow: auto;
-    background-color: #16171A;
-    font-family: 'Open Sans', sans-serif;
+    background: linear-gradient(151.13deg, #1B1820 36.17%, #383241 114.53%);
+    background-attachment: fixed;
 }

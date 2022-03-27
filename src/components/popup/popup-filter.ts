@@ -61,16 +61,12 @@ export class FilterPopup extends Popup {
         let order = this.getSelectedOrder();
 
 
-
-
         this.getSelectedDate();
         options.categories = categories;
         options.tags = tags;
         if (date != undefined) options.date = new DateFilter(date, DateOption.OLDER);
         else options.date = undefined;
         options.order = order;
-        console.log(options);
-        console.log(options.isDate());
 
         this.clickAction(options);
         this.close();

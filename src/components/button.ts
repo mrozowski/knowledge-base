@@ -9,68 +9,85 @@ export class Button extends LitElement {
     text: any = "button";
 
     @property({ type: Number })
-    type: ButtonType = ButtonType.standard;
+    type: ButtonType = ButtonType.STANDARD;
 
     setButtonStyle() {
         switch (this.type) {
-            case ButtonType.standard: return "standard-btn ";
-            case ButtonType.secondary: return "secondary-btn ";
-            case ButtonType.small: return "small-btn ";
+            case ButtonType.STANDARD: return "standard-btn ";
+            case ButtonType.SECONDARY: return "secondary-btn ";
+            case ButtonType.SMALL: return "icon-btn small-btn ";
+            case ButtonType.LARGE: return "icon-btn large-btn ";
         }
     }
 
     render() {
-
         return html`
         <div class="${this.setButtonStyle()} btn">
             ${this.text}
         </div>
         `
-
     }
 
     static get styles() {
         return [css`
         .btn {
-            color: white;
-           
+            color: var(--textColor);
             text-align: center;
             cursor: pointer;
-            transition: all 0.75s ease-out;
+            transition: color 0.25s ease-out, fill 0.25s ease-out;
             user-select: none;
             width: 5.5em;
             height: 2.5rem;
             line-height: 2.5rem;
         }
 
-        .standard-btn {
-            
+        .standard-btn{
+            font-weight: 500;
+        }
+
+        .standard-btn:hover{
+            color: white;
         }
 
         .secondary-btn{
-            font-weight: 100;
+            font-weight: 300;
         }
 
-        .small-btn {
+        .secondary-btn:hover{
+            color: white;
+        }
+
+        .icon-btn{
             width: 2em;
-            height: 2rem;
             line-height: 2rem;
             display: flex;
             justify-content: center;
-            align-content: center;
-            font-weight: 100;
+            fill: var(--secondary-text-color);
         }
 
-        svg{
-            fill: var(--textColor);
+        .icon-btn:hover{
+            fill: white;
+        }
+
+        .small-btn{
+            width: 2.5rem;
+        }
+
+        .small-btn > svg{
             width: 1rem;
         }
+
+        .large-btn > svg {
+            
+        }
+
         `, Styles.VARIABLES];
     }
 }
 
 export enum ButtonType {
-    standard,
-    secondary,
-    small
+    STANDARD,
+    SECONDARY,
+    SMALL,
+    LARGE
 }

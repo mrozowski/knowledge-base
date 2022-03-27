@@ -1,21 +1,19 @@
 import { css, html, LitElement, PropertyDeclaration, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { Styles } from '../../common/styles';
+import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Datasource } from '../../model/datasource';
 import { Issue } from '../../model/issue';
 import { Category } from "./category";
 import './issue-element'
 import { NoMoreIssuesHasBeenFound } from './issues-exception';
 import { SearchOption } from './search-option';
+import { Icons } from '../../common/icons';
 
 
 @customElement('start-page')
 export class Start extends LitElement {
 
-    static styles = css`
-        .content-main{ display: flex; justify-content: center; flex-direction: column;} .issue{flex-grow: 1;}
-        .load-more{color: white; text-align: center;}
-        .invisible{ display: none;}
-        `
 
     private isMoreIssues: boolean = true;
 
@@ -42,17 +40,13 @@ export class Start extends LitElement {
         if (_changedProperties.has('searchOption')) {
             const old = _changedProperties.get('searchOption');
             if (old && old != this.searchOption) {
-                console.log("send request");
                 const response = this.datasource.search(this.searchOption);
-                console.log(this.searchOption);
-
                 response.then(result => {
                     this.issues = result;
                     this.isMoreIssues = true;
                 })
                     .catch(error => {
                         console.log(error);
-
                     });
             }
         }
@@ -108,12 +102,28 @@ export class Start extends LitElement {
                     .click=${() => this.showDetails(issue)}>
                 </issue-element>`)}
 
-                <div class="load-more" @click=${this.loadMore}>${this.isMoreIssues ? "Load more" : "No more documents found."}</div>
+                <div class="${this.isMoreIssues ? "cursor " : ""} load-more " @click=${this.loadMore}>
+                ${this.isMoreIssues ? "Load more" : "No more documents found."}
+                    <p class=${this.isMoreIssues ? "" : "invisible"}>${unsafeHTML(Icons.arrowDown)}</p>
+                </div>
             </div>
             `;
         } else {
             return html`<div class="content-main"><p> Loading </p></div>`;
         }
 
+    }
+
+    static get styles() {
+        return [Styles.VARIABLES, css`
+        .content-main{ display: flex; justify-content: center; flex-direction: column; padding: 0 1rem;} 
+        .load-more{color: var(--secondary-text-color); text-align: center;  display: flex; flex-direction: column; align-items: center; margin: 1rem auto;  transition: all 0.5s ease-out}
+        .load-more:hover > p > svg { fill: var(--textColor); }
+        .load-more > p {width: 3rem;}
+        .load-more > p > svg {fill: var(--tertiary--text-color); transition: all 0.5s ease-out}
+        .cursor {cursor: pointer;}
+        .invisible{ visibility: hidden}
+        .issue{flex-grow: 1;}
+        `]
     }
 }

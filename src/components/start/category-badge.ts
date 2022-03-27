@@ -1,5 +1,6 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
+import { Styles } from '../../common/styles';
 import { Category } from './category';
 
 @customElement('category-badge')
@@ -39,45 +40,47 @@ export class CategoryBadge extends LitElement {
 
 
     static get styles() {
-        return css`
+        return [Styles.VARIABLES, css`
         .category-badge{
             width: 6rem;
             height: 2rem;
             color: white;
             text-align: center;
-            margin: 0.3rem;
             border-radius: 0.5rem;
             line-height: 2rem;
             font-size: 1em;
         }
 
         .java{
-            background-color: #F8981D;
+            background-color: var(--category-java);
         }
         .sql{
-            background-color: #1D8FF8;
+            background-color: var(--category-sql);
         }
         .css{
-            background-color: #1DDEF8;
+            background-color: var(--category-css);
         }
         .python{
-            background-color: #FFCC3C;
+            background-color: var(--category-python);
         }
         .bash{
-            background-color: #981DF8;
+            background-color: var(--category-bash);
         }
         .web{
-            background-color: #3C1DF8;
+            background-color: var(--category-web);
         }
         .android{
-            background-color: #A4C739;
+            background-color: var(--category-android);
         }
         .servers{
-            background-color: #F81DBB;
+            background-color: var(--category-servers);
+        }
+        .ai{
+            background-color: var(--category-ai);
         }
         .others{
-            background-color: #F81D1D;
+            background-color: var(--category-other);
         }
-        `;
+        `];
     }
 }

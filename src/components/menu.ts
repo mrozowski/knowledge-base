@@ -6,6 +6,7 @@ import { ButtonType } from "./button"
 import './popup/popup-filter';
 import "./add-button"
 import { FilterPopup } from './popup/popup-filter';
+import { Styles } from '../common/styles';
 
 
 
@@ -63,9 +64,16 @@ export class TopMenu extends LitElement {
 
   searchBar() {
     return html`
-    <div class="wrap">
+    <div class="bar-wrap">
       <div class="search">
-        <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What are you looking for?">
+        <button-x 
+          class="filter-btn"
+          .type=${ButtonType.LARGE} 
+          .text=${html`${unsafeHTML(Icons.filter)}`}  
+          @click=${this.openFilterBox}  
+          title="filter">
+        </button-x>
+        <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What do you need today?">
         <div class="searchButton" @click=${() => this.searchIssue(this.searchText)} >
           <ion-icon name="search-outline" size="large"></ion-icon>
         </div>
@@ -81,86 +89,106 @@ export class TopMenu extends LitElement {
      <popup-filter></popup-filter> 
     <nav>
       <div class="menu">
-        <span>It's top menu</span>
-        <button-x .type=${ButtonType.small} .text=${html`${unsafeHTML(Icons.filter)}`}  @click=${this.openFilterBox}  title="filter"></button-x>
-               
-        ${this.searchBar()}
-        <add-button @click=${() => this.addIssue()} class=${this.isLoggedIn ? "" : "hidden"}></add-button>
-        <button-x @click=${this.showLoginPage} text="Login" .type=${ButtonType.standard}></button-x>
+      <div class="logo">${unsafeHTML(Icons.logo)}</div>
+      
+      ${this.searchBar()}
+      <div class="button-section">
+        <button-x @click=${this.addIssue} text="Create" .type=${ButtonType.STANDARD} class=${this.isLoggedIn ? "" : "hidden"}></button-x>
+        <button-x @click=${this.showLoginPage} text="Login" .type=${ButtonType.STANDARD}></button-x>
       </div>
-    </nav>
-
-   
+      </div>
+    </nav>   
     `;
   }
 
 
   static get styles() {
-    return css`
+    return [Styles.VARIABLES, css`
     nav {
       width: 100%;
       height: 5rem;
-      background-color: rgba(255, 255, 255, 0.06);
-      margin-bottom: 1.5rem;
+      background-color: var(--main-accent-color);
+      margin-bottom: 1rem;
     }
+
     .menu {
       display: flex;
       height: 100%;
-      align-items: center;
-      padding: 0 2rem;
-      
+      align-items: center;      
+      justify-content: space-between;
     }
 
-    button {
-      height: 2rem;
-      margin-left: 0.4rem;
+    .logo{
+      display: flex;
+      height: 100%;
+      margin-left: 0.5rem;
+    }
+
+    .logo > svg{
+      width: 4em;
+      padding-top: 5px;
+    }
+
+    .filter-btn{
+      margin: 0 2%;
+    }
+
+    .button-section{
+      display: flex;
     }
 
     .search {
-      width: 100%;
-      position: relative;
       display: flex;
     }
 
     .searchTerm {
-      width: 100%;
+      width: 25rem;
       border-right: none;
-      padding: 5px;
+      padding: 5px 10px;
+      margin-left: 1rem;
       height: 2rem;
       border: none;
       border-radius: 5px 0 0 5px;
       outline: none;
-      
-      color: #afafaf;
+      transition: color 0.25s ease-out;
+      background-color: var(--shade-color);
+      color: var(--secondary-text-color)
     }
 
     .searchTerm:focus{
-      color: black;
+      color: var(--textColor);
+    }
+
+    .searchTerm::placeholder{
+      color: var(--tertiary-text-color);
+      font-weight: 100;
     }
 
     .searchButton {
       display: flex;
-      width: 3rem;
-      height: 2.6rem;
+      width: 3.6rem;
+      background-color: var(--light-accent-color);
+      color: var(--textColor);
       border: none;
-      background: linear-gradient(180deg, #1DDEF8 0%, #4780C2 100%);
-      color: #fff;
       border-radius: 0 5px 5px 0;
       cursor: pointer;
       align-items: center;
       justify-content: center;
+      transition: all 0.25s ease-out;
     }
 
-    .wrap{
-      margin-right: auto;
-      margin-left: auto;
-      padding-left: 10%;
-      width: 30%;
-      min-width: 23.5rem;
+    .searchButton:hover{
+      -webkit-filter: brightness(120%);
+      filter: brightness(120%);
     }
+
+    .bar-wrap{
+      min-width: 24rem;
+    }
+
     .hidden {
       visibility: hidden;
     }
-    `
+    `]
   }
 }

@@ -28,9 +28,9 @@ export abstract class Popup extends LitElement {
         return html`
         <div class=${this.open ? "container" : "hidden"} >
         <div class="overlay"></div>
-            <div class="card">
+            <div class="popup-card">
                 <div class="top-bar">
-                    <button-x .text=${"Cancel"} @click=${this.close} type=${ButtonType.secondary}></button-x>
+                    <button-x .text=${"Cancel"} @click=${this.close} type=${ButtonType.SECONDARY}></button-x>
                     <button-x .text=${"Ok"} @click=${() => this.clickOkButton()}></button-x>
                 </div>
                 <div class="box-content">
@@ -49,7 +49,7 @@ export abstract class Popup extends LitElement {
     static get styles() {
         return [
             Styles.VARIABLES,
-            Styles.CARD,
+            Styles.POPUP_CARD,
             this.customStyles(),
             css`
             .container{

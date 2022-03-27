@@ -70,6 +70,7 @@ export class FirebaseApi implements Datasource {
       title: issue.title,
       tags: issue.tags,
       id: issue.id,
+      content: issue.content,
       description: issue.description,
       metadata: Metadata.create(issue.title),
       public: issue.isPublic,
@@ -125,28 +126,21 @@ export class FirebaseApi implements Datasource {
     const issueCollection = collection(db, 'issues');
 
     const filters: QueryConstraint[] = this.createQueryConstraints(searchOption);
-    console.log(filters);
 
     const firebaseQuery = query(issueCollection, ...filters, limit(this.pageSize));
-    // const firebaseQuery = query(issueCollection, orderBy("created_at", "desc"), where("metadata", "array-contains", "test"), limit(this.pageSize));
-    console.log(firebaseQuery);
-
     return this.getQueryResponse(firebaseQuery);
   }
 
   private createQueryConstraints(searchOption: SearchOption): QueryConstraint[] {
     const firebaseOrder = this.toFirebaseOrder(searchOption.order);
     let filters: QueryConstraint[] = [];
-    console.log(searchOption);
 
     if (searchOption.isDate()) {
       filters.push(where("created_at", this.toFirebaseFilterSymbol(searchOption.date!.option), Timestamp.fromDate(searchOption.date!.date)));
-      console.log("data");
-
+      if (firebaseOrder.field != "created_at")
+        filters.push(orderBy("created_at", "desc"));
     }
     if (searchOption.isCategories()) {
-      console.log(searchOption.categories);
-
       filters.push(where("category", "in", searchOption.categories))
     }
     if (searchOption.isTags() && searchOption.isTitle()) {
@@ -198,6 +192,7 @@ export class FirebaseApi implements Datasource {
       json.tags,
       json.views,
       json.id,
+      json.content,
       json.description,
       json.public
     );
