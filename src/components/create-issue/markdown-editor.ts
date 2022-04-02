@@ -24,8 +24,8 @@ export class MarkdownEditor extends LitElement {
     defaultContent: any;
 
     firstUpdated() {
-
         this.addEventListener('paste', this.pasteHandler);
+        window.addEventListener('keydown', this.previewListener);
     }
 
     updated(_changedProperties) {
@@ -37,8 +37,6 @@ export class MarkdownEditor extends LitElement {
             }
         }
     }
-
-
 
     pasteHandler = (e) => {
         //later handle loading text before picture is uploaded and then remove that line from textarea
@@ -81,14 +79,14 @@ export class MarkdownEditor extends LitElement {
         target!.selectionStart = this.cursor;
         target!.selectionEnd = this.cursor;
         target!.focus();
-        this.textareaListener(target?.value);
+        this.contentListener(target?.value);
     }
 
     insertLink() {
         let target = this.shadowRoot!.querySelector("textarea");
         this.insertLinkAtCursor(target, MdCode.link);
         target!.focus();
-        this.textareaListener(target?.value);
+        this.contentListener(target?.value);
     }
 
     wrapCode(value: string) {
@@ -97,7 +95,7 @@ export class MarkdownEditor extends LitElement {
         target!.selectionStart = this.cursor;
         target!.selectionEnd = this.cursor;
         target!.focus();
-        this.textareaListener(target?.value);
+        this.contentListener(target?.value);
     }
 
 
@@ -122,7 +120,7 @@ export class MarkdownEditor extends LitElement {
             </section>
         
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false"
-                @keyup=${(e) => this.textareaListener(e.target.value)} class=${this.isPreview ? "invisible" : ""}></textarea>
+                @keydown=${(e) => this.textareaListener(e)} class=${this.isPreview ? "invisible" : ""} ></textarea>
         
             <div class=${this.isPreview ? "preview" : "invisible"}>
                 ${this.isPreview ? this.getPreview() : null}
@@ -225,9 +223,7 @@ export class MarkdownEditor extends LitElement {
                 } else {
                     startText = myValue + startText.substring(indexOfLastNewLine + 1);
                 }
-                myField.value = startText
-
-                    + myField.value.substring(endPos, myField.value.length);
+                myField.value = startText + myField.value.substring(endPos, myField.value.length);
                 this.cursor = endPos + myValue.length;
             } else {
                 var text = myField.value.substring(startPos, endPos);
@@ -241,6 +237,51 @@ export class MarkdownEditor extends LitElement {
             this.cursor = myValue.length;
         }
 
+    }
+
+    private goToNewWord = (myField) => {
+        if (myField.selectionStart) {
+            var startPos = myField.selectionStart;
+
+            const spaceIndex = myField.value.indexOf(" ", startPos);
+            const newLineIndex = myField.value.indexOf("\n", startPos);
+
+            if (spaceIndex != -1 && spaceIndex < newLineIndex) {
+                myField.selectionStart = spaceIndex + 1;
+                myField.selectionEnd = myField.selectionStart;
+            } else if (newLineIndex == -1 && spaceIndex == -1) {
+                myField.value += " ";
+                myField.selectionStart = myField.value.length;
+                myField.selectionEnd = myField.selectionStart;
+            } else if (newLineIndex != -1 && newLineIndex < spaceIndex || spaceIndex == -1) {
+                myField.value = myField.value.substring(0, newLineIndex) + " " + myField.value.substring(newLineIndex);
+                myField.selectionStart = newLineIndex + 1;
+                myField.selectionEnd = myField.selectionStart;
+            } else if (newLineIndex == -1 && spaceIndex != -1) {
+                myField.selectionStart = spaceIndex + 1;
+                myField.selectionEnd = myField.selectionStart;
+            }
+        }
+    }
+
+    private deleteLine = (myField) => {
+        if (myField.selectionStart) {
+            var startPos = myField.selectionStart;
+
+            let endOfLine = myField.value.indexOf("\n", startPos);
+            if (endOfLine == -1) endOfLine = myField.value.length;
+            let startOfLine = myField.value.substring(0, endOfLine).lastIndexOf("\n");
+
+            if (startOfLine == -1) {
+                myField.value = myField.value.substring(endOfLine);
+                myField.selectionStart = 0;
+                myField.selectionEnd = 0;
+            } else {
+                myField.value = myField.value.substring(0, startOfLine + 1) + myField.value.substring(endOfLine);
+                myField.selectionStart = startOfLine + 1;
+                myField.selectionEnd = startOfLine + 1;
+            }
+        }
     }
 
     private wrapTextAtCursor = (myField, myValue) => {
@@ -290,7 +331,117 @@ export class MarkdownEditor extends LitElement {
 
     }
 
-    private textareaListener = (value) => {
-        this.contentListener(value);
+    private findSymbol(line: string): string {
+        line = line.trim();
+        if (line[0] === '-') return "-";
+
+        if (/^(\d+\.)( )?([\w\d.,?!@#$%^&*\(\)\[\]\-\/ ]+)?$/.test(line)) {
+            const dotIndex = line.indexOf(".");
+            return line.substring(0, dotIndex + 1);
+        }
+        return "";
+    }
+
+    private setSpace(n: number): string {
+        let spacing = ""
+        for (var i = 0; i < n; i++) {
+            spacing += " ";
+        }
+        return spacing;
+    }
+
+    private enterEvent(myField) {
+        var startPos = myField.selectionStart;
+
+        let endOfLine = myField.value.indexOf("\n", startPos);
+        if (endOfLine == -1) endOfLine = myField.value.length;
+
+        const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+        const line = myField.value.substring(startOfLine, endOfLine);
+        const symbol = this.findSymbol(line);
+
+        if (symbol.length > 0 && startPos - startOfLine > 1) {
+            if (line.trim() == symbol) {
+                myField.value = myField.value.substring(0, startOfLine + 1) + "\n " + myField.value.substring(startPos);
+                myField.selectionStart = startOfLine + 2;
+                myField.selectionEnd = myField.selectionStart;
+            } else {
+                const spaceLength = myField.value.indexOf(symbol, startOfLine) - startOfLine - 1;
+                const spacing = this.setSpace(spaceLength);
+                myField.value = myField.value.substring(0, startPos) + `\n${spacing}${symbol} ` + myField.value.substring(startPos);
+                myField.selectionStart = startPos + symbol.length + spaceLength + 2;
+                myField.selectionEnd = myField.selectionStart;
+            }
+        }
+        else {
+            myField.value = myField.value.substring(0, startPos) + "\n" + myField.value.substring(startPos);
+            myField.selectionStart = startPos + 1;
+            myField.selectionEnd = myField.selectionStart;
+        }
+    }
+
+    private tabEvent(myField) {
+        const tab = "   ";
+        var startPos = myField.selectionStart;
+
+        let endOfLine = myField.value.indexOf("\n", startPos);
+        if (endOfLine == -1) endOfLine = myField.value.length;
+
+        const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+        const line = myField.value.substring(startOfLine, endOfLine).trim();
+        const symbol = this.findSymbol(line);
+
+        if (symbol.length > 0 && startPos - startOfLine > 1) {
+
+            myField.value = myField.value.substring(0, startOfLine + 1) + `${tab}` + myField.value.substring(startOfLine + 1);
+            myField.selectionStart = startPos + tab.length;
+            myField.selectionEnd = myField.selectionStart;
+        }
+        else {
+            myField.value = myField.value.substring(0, startPos) + `${tab}` + myField.value.substring(startPos);
+            myField.selectionStart = startPos + tab.length;
+            myField.selectionEnd = myField.selectionStart;
+        }
+    }
+
+    private textareaListener = (e) => {
+        this.contentListener(e.target.value);
+
+        if (e.ctrlKey && e.code === "KeyB") {
+            this.wrapCode(MdCode.bold);
+        } else if (e.ctrlKey && e.code === "KeyI") {
+            this.wrapCode(MdCode.italic);
+        } else if (e.ctrlKey && e.shiftKey && e.code === 'KeyX') {
+            this.wrapCode(MdCode.strikethrought);
+        } else if (e.ctrlKey && e.shiftKey && e.code === 'Backspace') {
+            this.deleteLine(e.target);
+        } else if (e.ctrlKey && e.code === 'Space') {
+            this.goToNewWord(e.target);
+        } else if (e.code === "Enter") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.enterEvent(e.target);
+        } else if (e.code === "Tab") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.tabEvent(e.target);
+        }
+    }
+
+    private previewListener = (e) => {
+        if (e.ctrlKey && e.altKey && e.code === 'KeyP') {
+            let target: HTMLTextAreaElement = this.shadowRoot?.querySelector("textarea") as HTMLTextAreaElement;
+            if (this.isPreview) {
+                this.showEditor();
+                target.selectionStart = this.cursor;
+                target.selectionEnd = this.cursor;
+
+                setTimeout(() => target.focus(), 0); // I have no idea why focus() works only like that
+            } else {
+                this.cursor = target.selectionStart;
+                this.showPreview()
+            }
+        }
+
     }
 }
