@@ -75,7 +75,7 @@ export class MarkdownStyles extends Styles {
         }
 
         .markdown-body table tr:nth-child(2n) {
-            background-color: var(--color-canvas-subtle);
+            background-color: var(--card-background);
         }
 
         .markdown-body table th, .markdown-body table td {

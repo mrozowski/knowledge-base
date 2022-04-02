@@ -30,6 +30,7 @@ export class Start extends LitElement {
     searchOption: any;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
+        window.history.pushState(null, "", "/home")
         const response = this.datasource.getIssues();
         response.then((result) => {
             this.issues = result;

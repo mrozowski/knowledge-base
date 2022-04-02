@@ -404,6 +404,27 @@ export class MarkdownEditor extends LitElement {
         }
     }
 
+    private backTabEvent(myField) {
+        const tab = "   ";
+        var startPos = myField.selectionStart;
+
+        let endOfLine = myField.value.indexOf("\n", startPos);
+        if (endOfLine == -1) endOfLine = myField.value.length;
+
+        const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+        const line = myField.value.substring(startOfLine, endOfLine).trim();
+        const symbol = this.findSymbol(line);
+
+        if (symbol.length > 0 && startPos - startOfLine > 1) {
+            const spaceLength = myField.value.indexOf(symbol, startOfLine) - startOfLine - 1;
+            let spaceToRemove = tab.length;
+            if (spaceLength < spaceToRemove) spaceToRemove = spaceLength;
+            myField.value = myField.value.substring(0, startOfLine + 1) + myField.value.substring(startOfLine + spaceToRemove + 1);
+            myField.selectionStart = startPos - spaceToRemove;
+            myField.selectionEnd = myField.selectionStart;
+        }
+    }
+
     private textareaListener = (e) => {
         this.contentListener(e.target.value);
 
@@ -421,6 +442,10 @@ export class MarkdownEditor extends LitElement {
             e.preventDefault();
             e.stopPropagation();
             this.enterEvent(e.target);
+        } else if (e.shiftKey && e.code === "Tab") {
+            e.preventDefault();
+            e.stopPropagation();
+            this.backTabEvent(e.target);
         } else if (e.code === "Tab") {
             e.preventDefault();
             e.stopPropagation();
@@ -436,7 +461,7 @@ export class MarkdownEditor extends LitElement {
                 target.selectionStart = this.cursor;
                 target.selectionEnd = this.cursor;
 
-                setTimeout(() => target.focus(), 0); // I have no idea why focus() works only like that
+                setTimeout(() => target.focus(), 50); // It works even with 0ms but it doesn't work outside of setTImeout. No idea why :|
             } else {
                 this.cursor = target.selectionStart;
                 this.showPreview()
