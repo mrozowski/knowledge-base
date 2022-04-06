@@ -21,12 +21,27 @@ export class IssueDetails extends LitElement {
     @property()
     markdownDescription: any;
 
+    @property()
+    id: string = "";
+
     @property({ type: Object })
     datasource!: Datasource;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
-        window.history.pushState("", "", `details/${this.issue.id}`);
-        const descPromise = this.datasource.getFileContent(this.issue.content);
+        if (this.issue) {
+            window.history.pushState("", "", `/documents/${this.issue.id}`);
+            this.getContent(this.issue.content);
+        } else if (this.id != "") {
+            const result = this.datasource.getIssue(this.id);
+            result.then(issue => {
+                this.issue = issue;
+                this.getContent(this.issue.content);
+            })
+        }
+    }
+
+    private getContent(link: string) {
+        const descPromise = this.datasource.getFileContent(link);
         descPromise.then(e => {
             this.markdownDescription = e;
         });

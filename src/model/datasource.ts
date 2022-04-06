@@ -5,6 +5,7 @@ export interface Datasource {
     getPageSize(): number;
     search(searchOption: SearchOption): Promise<Issue[]>
     getIssues(): Promise<Issue[]>;
+    getIssue(id: string): Promise<Issue>;
     getNextIssues(searchOption?: SearchOption): Promise<Issue[]>;
     getFileContent(filePath: string): Promise<string>;
     storePicture(file: Blob, name: string): Promise<string>

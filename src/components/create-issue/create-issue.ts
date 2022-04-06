@@ -30,6 +30,8 @@ export class CreateIssue extends LitElement {
     }
 
     firstUpdated() {
+
+        window.history.pushState(null, "", "/creator")
         let category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         for (let item in Category) {
             if (isNaN(Number(item))) {

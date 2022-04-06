@@ -54,6 +54,25 @@ export class Main extends LitElement {
     this.requestUpdate("searchOption");
   }
 
+  protected firstUpdated(changedProperties: any): void {
+    window.addEventListener('popstate', this.historyChangeEvent);
+
+  }
+
+  private historyChangeEvent = (e) => {
+    console.log("event handled");
+
+    const pagePath = window.location.pathname
+    if (pagePath == "/home") {
+      this.showStartPage();
+    } else if (pagePath == "/creator") {
+      this.addIssue();
+    } else if (pagePath.includes("/documents/")) {
+      const docId = pagePath.substring(11);
+      this.showIssueDetails();
+    }
+  }
+
   render() {
     return html`
     <top-menu 
