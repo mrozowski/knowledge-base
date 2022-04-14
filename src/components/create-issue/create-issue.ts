@@ -108,6 +108,7 @@ export class CreateIssue extends LitElement {
     }
 
     render() {
+        console.log("Creator render");
         return html`
         <div class="container">
             <div class="card">

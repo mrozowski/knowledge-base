@@ -49,6 +49,8 @@ export class IssueDetails extends LitElement {
 
 
     render() {
+        console.log("Details render");
+
         return html`
         <div class="container">
         <div class="card">

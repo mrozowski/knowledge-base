@@ -86,7 +86,7 @@ export class Start extends LitElement {
 
 
     render() {
-
+        console.log("home render");
         if (this.issues.length > 0) {
             return html`
             <div class="content-main">
