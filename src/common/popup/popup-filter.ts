@@ -1,8 +1,8 @@
 import { css, CSSResult, html, LitElement, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
-import { Styles } from "../../common/styles";
-import { Category } from "../start/category";
-import { DateFilter, DateOption, OrderBy, SearchOption } from "../start/search-option";
+import { Styles } from "../styles";
+import { Category } from "../../model/category";
+import { DateFilter, DateOption, OrderBy, SearchOption } from "../../model/search-option";
 import { Popup } from "./popup";
 
 @customElement("popup-filter")

@@ -1,8 +1,8 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Styles } from '../../common/styles';
-import { Category } from './category';
-import "./category-badge"
+import { Category } from '../../model/category';
+import "../../common/category-badge"
 
 @customElement('issue-element')
 export class IssueElement extends LitElement {

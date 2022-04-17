@@ -2,13 +2,12 @@ import { html, LitElement, css } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Icons } from '../common/icons';
-import { ButtonType } from "./button"
-import './popup/popup-filter';
-import "./add-button"
-import { FilterPopup } from './popup/popup-filter';
+import { ButtonType } from "../common/button"
+import '../common/popup/popup-filter';
+import { FilterPopup } from '../common/popup/popup-filter';
 import { Styles } from '../common/styles';
-
-
+import { LinkTo } from '../system/router';
+import { Pages } from '../page-definition';
 
 @customElement('top-menu')
 export class TopMenu extends LitElement {
@@ -20,25 +19,16 @@ export class TopMenu extends LitElement {
   }
 
   @property({ type: Boolean })
-  isLoggedIn: boolean = true;
-
-  @property()
-  showStartPage?: any;
-
-  @property()
-  showAboutMePage?: any;
-
-  @property()
-  showLoginPage?: any;
-
-  @property()
-  addIssue?: any;
+  isLoggedIn: boolean = false;
 
   @property()
   searchIssue?: any;
 
   @property()
   filterIssues: any;
+
+  @property()
+  logout: any
 
   pressedKey = (e: KeyboardEvent) => {
     // fix it later
@@ -53,14 +43,11 @@ export class TopMenu extends LitElement {
     }
   }
 
-
-
-  openFilterBox = () => {
+  private openFilterBox = () => {
     const popupBox = this.shadowRoot?.querySelector('popup-filter') as FilterPopup;
     popupBox.clickAction = this.filterIssues;
     popupBox.open = true;
   }
-
 
   searchBar() {
     return html`
@@ -82,7 +69,13 @@ export class TopMenu extends LitElement {
     `
   }
 
-
+  loginButton() {
+    if (this.isLoggedIn) {
+      return html`<button-x @click=${() => this.logout()} text="Logout"></button-x>`
+    } else {
+      return html`<button-x @click=${() => LinkTo(Pages.LOGIN)} text="Login"></button-x>`
+    }
+  }
 
   render() {
     return html`
@@ -93,14 +86,13 @@ export class TopMenu extends LitElement {
       
       ${this.searchBar()}
       <div class="button-section">
-        <button-x @click=${this.addIssue} text="Create" .type=${ButtonType.STANDARD} class=${this.isLoggedIn ? "" : "hidden"}></button-x>
-        <button-x @click=${this.showLoginPage} text="Login" .type=${ButtonType.STANDARD}></button-x>
+        <button-x @click=${() => LinkTo(Pages.EDITOR)} text="Create" .type=${ButtonType.STANDARD} class=${this.isLoggedIn ? "" : "hidden"}></button-x>
+        ${this.loginButton()}
       </div>
       </div>
     </nav>   
     `;
   }
-
 
   static get styles() {
     return [Styles.VARIABLES, css`

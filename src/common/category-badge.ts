@@ -1,7 +1,7 @@
 import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Styles } from '../../common/styles';
-import { Category } from './category';
+import { Styles } from './styles';
+import { Category } from '../model/category';
 
 @customElement('category-badge')
 export class CategoryBadge extends LitElement {

@@ -1,18 +1,19 @@
-import { SearchOption } from '../components/start/search-option';
-import { Issue } from './issue'
+import { SearchOption } from './search-option';
+import { Document } from './document'
+import { UserAccount } from './user';
 
 export interface Datasource {
     getPageSize(): number;
-    search(searchOption: SearchOption): Promise<Issue[]>
-    getIssues(): Promise<Issue[]>;
-    getIssue(id: string): Promise<Issue>;
-    getNextIssues(searchOption?: SearchOption): Promise<Issue[]>;
+    search(searchOption: SearchOption): Promise<Document[]>
+    getIssues(): Promise<Document[]>;
+    getIssue(id: string): Promise<Document>;
+    getNextIssues(searchOption?: SearchOption): Promise<Document[]>;
     getFileContent(filePath: string): Promise<string>;
     storePicture(file: Blob, name: string): Promise<string>
     uploadMarkdown(text: string, id: string): Promise<string>;
-    createNewIssue(issue: Issue): Promise<void>
-    // create a new issue
+    createNewIssue(issue: Document): Promise<void>
+    login(username: string, password: string): Promise<UserAccount>;
+    logout(): Promise<void>;
+    isLogin(): boolean;
     //login / logout
-    // get issue by id
-    // add sorting
 }

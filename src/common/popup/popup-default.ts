@@ -11,8 +11,6 @@ export class PopupDefault extends Popup {
     @property()
     title: string = "";
 
-    clickAction: any;
-
 
     clickOkButton = (): void => {
         this.clickAction();

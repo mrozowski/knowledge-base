@@ -1,47 +1,55 @@
 import { css, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Issue } from '../../model/issue';
-import { Category } from './category';
-import "./category-badge"
-import { ButtonType } from '../button';
-import { Datasource } from '../../model/datasource';
+import { Document } from '../../model/document';
+import { Category } from '../../model/category';
+import "../../common/category-badge"
+import { ButtonType } from '../../common/button';
 import './markdown-viewer'
 import { Styles } from '../../common/styles';
+import KDatasource from '../../config/configuration';
+import { GoBack } from '../../system/router';
 
 
-@customElement('issue-details')
-export class IssueDetails extends LitElement {
+@customElement('docuemnt-details-page')
+export class DocumentDetails extends LitElement {
 
-    @property()
-    issue!: Issue;
+    private errorDescription: string = "";
+    private isError: boolean = false;
 
-    @property()
-    goBack!: any;
-
-    @property()
-    markdownDescription: any;
+    @property({ type: Object })
+    document!: Document;
 
     @property()
     id: string = "";
 
-    @property({ type: Object })
-    datasource!: Datasource;
+    @property()
+    markdownDescription: any;
+
+
+
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
-        if (this.issue) {
-            window.history.pushState("", "", `/documents/${this.issue.id}`);
-            this.getContent(this.issue.content);
-        } else if (this.id != "") {
-            const result = this.datasource.getIssue(this.id);
+        if (this.document) {
+            this.getContent(this.document.content);
+        } else {
+            if (this.id === "") {
+                const a = window.location.href.indexOf("document/");
+                this.id = window.location.href.substring(a + 9);
+            }
+            const result = KDatasource.getIssue(this.id);
             result.then(issue => {
-                this.issue = issue;
-                this.getContent(this.issue.content);
-            })
+                this.document = issue;
+                this.getContent(this.document.content);
+            }).catch(error => {
+                this.isError = true;
+                this.errorDescription = `Could not find document with id: ${this.id}`;
+                this.requestUpdate();
+            });
         }
     }
 
     private getContent(link: string) {
-        const descPromise = this.datasource.getFileContent(link);
+        const descPromise = KDatasource.getFileContent(link);
         descPromise.then(e => {
             this.markdownDescription = e;
         });
@@ -50,30 +58,41 @@ export class IssueDetails extends LitElement {
 
     render() {
         console.log("Details render");
+        if (this.isError) {
+            return html`
+            <div class="container">
+                <p> ${this.errorDescription} </p>
+            </div>
+            `
+        }
+        if (!this.document) {
+            return html`
+            <div class="container">Loading</div>`;
+        }
 
         return html`
         <div class="container">
         <div class="card">
                 <div class="top-bar">
-                    <button-x .text=${"Back"} @click=${() => this.goBack()}></button-x>
+                    <button-x .text=${"Back"} @click=${() => GoBack()}></button-x>
                     <div class="separator"></div>
-                    <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => this.goBack()}></button-x>
-                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => this.goBack()}></button-x>
+                    <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => GoBack()}></button-x>
+                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => GoBack()}></button-x>
                 </div>
             <div class="card-content">
-                <h1 class="title">${this.issue.title}</h1>
+                <h1 class="title">${this.document.title}</h1>
                 
                 <section>
-                    <span class="tags"> ${this.issue.tags} </span>
+                    <span class="tags"> ${this.document.tags} </span>
                     <div class="separator"></div>
-                    <span class="created-date"> ${this.issue.createdAt.toLocaleDateString()} </span>
-                    <category-badge .category=${Category[this.issue.category]}></category-badge>
+                    <span class="created-date"> ${new Date(this.document.createdAt).toLocaleDateString()} </span>
+                    <category-badge .category=${Category[this.document.category]}></category-badge>
                 </section>
         
                 <div class="viewer">
                     <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
                 </div>
-                <p class="views">${this.issue.views} views</p>
+                <p class="views">${this.document.views} views</p>
             </div>
         </div>
         `

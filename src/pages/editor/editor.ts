@@ -2,25 +2,21 @@ import { css, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { MarkdownStyles } from '../../common/markdown-styles';
 import { Datasource } from '../../model/datasource';
-import { Issue } from '../../model/issue';
-import { Category } from '../start/category';
+import { Document } from '../../model/document';
+import { Category } from '../../model/category';
 import { v4 as uuidv4 } from 'uuid';
 import './markdown-editor'
 import { Styles } from '../../common/styles';
-import { ButtonType } from '../button';
+import { ButtonType } from '../../common/button';
+import KDatasource from '../../config/configuration';
+import { GoBack } from '../../system/router';
 
 
-@customElement('create-issue')
-export class CreateIssue extends LitElement {
+@customElement('editor-page')
+export class Editor extends LitElement {
 
-    private content: string = CreateIssue.getDefaultTemplate();
+    private content: string = Editor.getDefaultTemplate();
     private tags: string[] = new Array();
-
-    @property({ type: Object })
-    datasource!: Datasource;
-
-    @property()
-    goBack: any
 
     createUniqueFileName(): string {
         // timestamp is good way to create unique name. However, if many people use website it might happend that two people upload file at this same time.
@@ -30,8 +26,6 @@ export class CreateIssue extends LitElement {
     }
 
     firstUpdated() {
-
-        window.history.pushState(null, "", "/creator")
         let category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         for (let item in Category) {
             if (isNaN(Number(item))) {
@@ -49,7 +43,7 @@ export class CreateIssue extends LitElement {
 
     storeFile = (file: Blob): Promise<string> => {
         let fileName = this.createUniqueFileName();
-        let ref = this.datasource.storePicture(file, fileName);
+        let ref = KDatasource.storePicture(file, fileName);
         return ref;
     }
 
@@ -62,10 +56,10 @@ export class CreateIssue extends LitElement {
         const id: string = uuidv4();
         const description = this.parseDescription(this.content);
 
-        let mdUrl = this.datasource.uploadMarkdown(this.content, id);
+        let mdUrl = KDatasource.uploadMarkdown(this.content, id);
 
         mdUrl.then(md => {
-            let issue: Issue = new Issue(
+            let document: Document = new Document(
                 author,
                 category.value,
                 new Date(),
@@ -78,7 +72,7 @@ export class CreateIssue extends LitElement {
                 true
             );
 
-            this.datasource.createNewIssue(issue).then(e => {
+            KDatasource.createNewIssue(document).then(e => {
                 console.log("Issue created");
                 // show some prompt 
             })
@@ -113,7 +107,7 @@ export class CreateIssue extends LitElement {
         <div class="container">
             <div class="card">
                 <div class="top-bar">
-                        <button-x .text=${"Cancel"} @click=${() => this.goBack()} .type=${ButtonType.SECONDARY}></button-x>
+                        <button-x .text=${"Cancel"} @click=${() => GoBack()} .type=${ButtonType.SECONDARY}></button-x>
                         <button-x .text=${"Submit"} @click=${this.submitIssue}></button-x>
                 </div>
                 <div class="card-content">

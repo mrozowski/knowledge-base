@@ -3,7 +3,7 @@ import { customElement, property } from 'lit/decorators.js';
 import { Icons } from '../../common/icons';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { MarkdownStyles } from '../../common/markdown-styles';
-import { Button, ButtonType } from '../button';
+import { Button, ButtonType } from '../../common/button';
 import { MarkdownCode as MdCode } from './markdown-code';
 import { Styles } from '../../common/styles';
 
@@ -204,14 +204,7 @@ export class MarkdownEditor extends LitElement {
 
     private insertTextAtCursor = (myField, myValue) => {
 
-        //IE support remove later
-        if (document.selection) {
-            myField.focus();
-            var sel = document.selection.createRange();
-            sel.text = myValue;
-        }
-        //MOZILLA and others
-        else if (myField.selectionStart || myField.selectionStart == '0') {
+        if (myField.selectionStart || myField.selectionStart == '0') {
             var startPos = myField.selectionStart;
             var endPos = myField.selectionEnd;
 

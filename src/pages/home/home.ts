@@ -1,39 +1,32 @@
-import { css, html, LitElement, PropertyDeclaration, PropertyValues } from 'lit';
+import { css, html, LitElement, PropertyValues } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Styles } from '../../common/styles';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
 import { Datasource } from '../../model/datasource';
-import { Issue } from '../../model/issue';
-import { Category } from "./category";
-import './issue-element'
-import { NoMoreIssuesHasBeenFound } from './issues-exception';
-import { SearchOption } from './search-option';
+import { Document } from '../../model/document';
+import { Category } from "../../model/category";
+import { NoMoreDocsHasBeenFound } from './document-exception';
 import { Icons } from '../../common/icons';
+import { LinkTo, PathVariable, Properties } from '../../system/router';
+import { Pages } from '../../page-definition';
+import './document-element'
+import KDatasource from '../../config/configuration';
 
-
-@customElement('start-page')
-export class Start extends LitElement {
-
+@customElement('home-page')
+export class Home extends LitElement {
 
     private isMoreIssues: boolean = true;
 
-    @property({ type: Object })
-    datasource!: Datasource;
-
     @property({ type: Array })
-    issues: Issue[] = new Array();
-
-    @property()
-    showDetails: any;
+    documents: Document[] = new Array();
 
     @property()
     searchOption: any;
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
-        window.history.pushState(null, "", "/home")
-        const response = this.datasource.getIssues();
+        const response = KDatasource.getIssues();
         response.then((result) => {
-            this.issues = result;
+            this.documents = result;
         });
     }
 
@@ -41,9 +34,9 @@ export class Start extends LitElement {
         if (_changedProperties.has('searchOption')) {
             const old = _changedProperties.get('searchOption');
             if (old && old != this.searchOption) {
-                const response = this.datasource.search(this.searchOption);
+                const response = KDatasource.search(this.searchOption);
                 response.then(result => {
-                    this.issues = result;
+                    this.documents = result;
                     this.isMoreIssues = true;
                 })
                     .catch(error => {
@@ -53,32 +46,25 @@ export class Start extends LitElement {
         }
     }
 
-    // requestUpdate(name?: PropertyKey, oldValue?: unknown, options?: PropertyDeclaration<unknown, unknown>): void {
-    //     if(name && name === "searchOption"){
-    //         if (oldValue != this.searchOption){
-    //             this.searchOption = 
-    //         }
-    //     }
-    // }
-
     loadMore = () => {
         if (this.isMoreIssues) {
-            const response = this.datasource.getNextIssues(this.searchOption);
+            const response = KDatasource.getNextIssues(this.searchOption);
             response.then((result) => {
                 result.forEach(e => {
-                    this.issues.push(e);
+                    this.documents.push(e);
+
+
                 })
-                if (this.datasource.getPageSize() > result.length) {
+                if (KDatasource.getPageSize() > result.length) {
                     this.isMoreIssues = false;
                 } else {
                     this.isMoreIssues = true;
                 }
-
-                this.requestUpdate('issues');
+                this.requestUpdate('documents');
             }).catch(e => {
-                if (e instanceof NoMoreIssuesHasBeenFound) {
+                if (e instanceof NoMoreDocsHasBeenFound) {
                     this.isMoreIssues = false;
-                    this.requestUpdate('issues');
+                    this.requestUpdate('documents');
                 }
             });
         }
@@ -87,20 +73,20 @@ export class Start extends LitElement {
 
     render() {
         console.log("home render");
-        if (this.issues.length > 0) {
+        if (this.documents.length > 0) {
             return html`
             <div class="content-main">
-                ${this.issues.map((issue) => html`<issue-element class="issue" 
-                .category=${Category[issue.category]}
-                    .title=${issue.title} 
-                    .author=${issue.author} 
-                    .createdAt=${issue.createdAt}
-                    .description=${issue.description}
-                    .tags=${issue.tags} 
-                    .id=${issue.id} 
-                    .views=${issue.views}
-                    .isPublic=${issue.isPublic} 
-                    .click=${() => this.showDetails(issue)}>
+                ${this.documents.map((document) => html`<issue-element class="issue" 
+                    .category=${Category[document.category]}
+                    .title=${document.title} 
+                    .author=${document.author} 
+                    .createdAt=${document.createdAt}
+                    .description=${document.description}
+                    .tags=${document.tags} 
+                    .id=${document.id} 
+                    .views=${document.views}
+                    .isPublic=${document.isPublic} 
+                    .click=${() => LinkTo(Pages.DOCUMENT, PathVariable.create(document.id), Properties.create("document", document).add("id", document.id))}>
                 </issue-element>`)}
 
                 <div class="${this.isMoreIssues ? "cursor " : ""} load-more " @click=${this.loadMore}>

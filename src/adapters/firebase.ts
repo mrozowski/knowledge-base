@@ -1,11 +1,14 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query } from 'firebase/firestore/lite';
 import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString } from 'firebase/storage'
-import { NoMoreIssuesHasBeenFound } from "../components/start/issues-exception";
-import { DateOption, OrderBy, SearchOption } from "../components/start/search-option";
+import { browserLocalPersistence, getAuth, onAuthStateChanged, sendEmailVerification, setPersistence, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { DocumentNotFoundError, NoMoreDocsHasBeenFound } from "../pages/home/document-exception";
+import { DateOption, OrderBy, SearchOption } from "../model/search-option";
 import { Datasource } from '../model/datasource';
-import { Issue } from '../model/issue';
+import { Document } from '../model/document';
 import { Metadata } from "./metadata-creator";
+import { UserAccount } from "../model/user";
+import { Storage } from "./localstorage";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAqq49xr6Ub6JURrCNIfdT04KXwqBkYgeU",
@@ -20,13 +23,19 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const store = getStorage(app);
+const auth = getAuth();
 
+auth.onAuthStateChanged(function (user) {
+  if (user) {
+    // User is signed in.
+    console.log("user was lagged in");
+    Storage.setAsLoggedIn(user.email!);
 
-async function getCategory(db: Firestore) {
-  const categoryCollection = collection(db, 'category');
-  const categories = await getDocs(categoryCollection);
-  return categories.docs.map(doc => doc.data());
-}
+  } else {
+    console.log("User logged out");
+    Storage.setAsLoggedOut();
+  }
+});
 
 class FirebaseOrder {
   constructor(
@@ -40,8 +49,56 @@ export class FirebaseApi implements Datasource {
     public readonly pageSize: number = 3,
     private lastDoc?: DocumentData) { }
 
+
+  async logout(): Promise<void> {
+    return auth.signOut();
+  }
+
+
+  async login(email: string, password: string): Promise<UserAccount> {
+    const user = setPersistence(auth, browserLocalPersistence)
+      .then(() => {
+        return signInWithEmailAndPassword(auth, email, password)
+          .then((userCredential) => {
+            // Signed in 
+            const _user = userCredential.user;
+            return new UserAccount(_user.email!, _user.displayName!);
+          })
+          .catch((error) => {
+            const errorCode = error.code;
+            const errorMessage = error.message;
+            console.log(errorCode);
+            console.log(errorMessage);
+            throw new Error();
+          });
+      })
+
+    return new UserAccount((await user).email, (await user).username);
+  }
+
+  isLogin(): boolean {
+    return Storage.getLoggedInUser() != null;
+  }
+
+
   getPageSize(): number {
     return this.pageSize;
+  }
+
+  async getIssue(id: string): Promise<Document> {
+    const issueCollection = collection(db, 'issues');
+    let customQuery;
+    if (this.isLogin()) {
+      customQuery = query(issueCollection, where("id", "==", id));
+    } else {
+      customQuery = query(issueCollection, where("id", "==", id), where("public", "==", true));
+    }
+
+    const issues = await getDocs(customQuery);
+    if (issues.docs[0].data()) {
+      return FirebaseApi.issueMapper(issues.docs[0].data());
+    }
+    throw new DocumentNotFoundError(id);
   }
 
   async getFileContent(filePath: string): Promise<string> {
@@ -62,7 +119,7 @@ export class FirebaseApi implements Datasource {
     return (await upload).ref.fullPath;
   }
 
-  async createNewIssue(issue: Issue): Promise<void> {
+  async createNewIssue(issue: Document): Promise<void> {
     return setDoc(doc(db, 'issues', issue.id), {
       author: issue.author,
       category: issue.category,
@@ -74,13 +131,20 @@ export class FirebaseApi implements Datasource {
       description: issue.description,
       metadata: Metadata.create(issue.title),
       public: issue.isPublic,
-      views: 0
+      views: 0,
+      author_id: auth.currentUser?.uid
     });
   }
 
-  async getIssues(): Promise<Issue[]> {
+  async getIssues(): Promise<Document[]> {
     const issueCollection = collection(db, 'issues');
-    let customQuery = query(issueCollection, orderBy("created_at", "desc"), limit(this.pageSize));
+    let customQuery;
+
+    if (this.isLogin()) {
+      customQuery = query(issueCollection, orderBy("created_at", "desc"), limit(this.pageSize));
+    } else {
+      customQuery = query(issueCollection, orderBy("created_at", "desc"), where("public", "==", true), limit(this.pageSize));
+    }
 
     const issues = await getDocs(customQuery);
     this.lastDoc = issues.docs[issues.docs.length - 1];
@@ -94,12 +158,17 @@ export class FirebaseApi implements Datasource {
     return response;
   }
 
-  async getNextIssues(searchOption: SearchOption): Promise<Issue[]> {
+  async getNextIssues(searchOption: SearchOption): Promise<Document[]> {
     if (this.lastDoc) {
       const issueCollection = collection(db, 'issues');
       let customQuery: any;
       if (searchOption.isDefault()) {
-        customQuery = query(issueCollection, orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
+        if (this.isLogin()) {
+          customQuery = query(issueCollection, orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
+        } else {
+          customQuery = query(issueCollection, where("public", "==", true), orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
+        }
+
       } else {
         const filters: QueryConstraint[] = this.createQueryConstraints(searchOption);
         customQuery = query(issueCollection, ...filters, startAfter(this.lastDoc), limit(this.pageSize));
@@ -114,7 +183,7 @@ export class FirebaseApi implements Datasource {
       });
 
       if (response.length == 0) {
-        throw new NoMoreIssuesHasBeenFound();
+        throw new NoMoreDocsHasBeenFound();
       }
 
       return response;
@@ -122,7 +191,7 @@ export class FirebaseApi implements Datasource {
     return []
   }
 
-  async search(searchOption: SearchOption): Promise<Issue[]> {
+  async search(searchOption: SearchOption): Promise<Document[]> {
     const issueCollection = collection(db, 'issues');
 
     const filters: QueryConstraint[] = this.createQueryConstraints(searchOption);
@@ -135,18 +204,23 @@ export class FirebaseApi implements Datasource {
     const firebaseOrder = this.toFirebaseOrder(searchOption.order);
     let filters: QueryConstraint[] = [];
 
+    if (!this.isLogin()) {
+      filters.push(where("public", "==", true));
+    }
+
     if (searchOption.isDate()) {
       filters.push(where("created_at", this.toFirebaseFilterSymbol(searchOption.date!.option), Timestamp.fromDate(searchOption.date!.date)));
       if (firebaseOrder.field != "created_at")
         filters.push(orderBy("created_at", "desc"));
     }
-    if (searchOption.isCategories()) {
+    if (searchOption.isCategories() && !searchOption.isTags()) {
+      // Again Firebase limitation doesnt let use two 'in' filters. Categories filter cannot be used together with tags
       filters.push(where("category", "in", searchOption.categories))
     }
     if (searchOption.isTags() && searchOption.isTitle()) {
       //Due to limitation of firebase we cannot use array-contains-any and array-contains in a single query :(
-      filters.push(where("tags", "in", searchOption.tags[0]))
-    } else if (searchOption.isTags() && !searchOption.isTitle()) {
+      filters.push(where("tags", "in", searchOption.tags))
+    } else if (searchOption.isTags() && (!searchOption.isTitle() || !searchOption.isCategories())) {
       filters.push(where("tags", "array-contains-any", searchOption.tags))
     }
     if (searchOption.isTitle()) {
@@ -160,7 +234,6 @@ export class FirebaseApi implements Datasource {
   private async getQueryResponse(query: Query) {
     const querySnapshot = await getDocs(query);
     this.lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
-    console.log("download docs");
 
     const response = Array();
     querySnapshot.forEach((issues) => {
@@ -184,7 +257,7 @@ export class FirebaseApi implements Datasource {
   }
 
   private static issueMapper(json) {
-    return new Issue(
+    return new Document(
       json.author,
       json.category,
       new Date(json.created_at.seconds * 1000),

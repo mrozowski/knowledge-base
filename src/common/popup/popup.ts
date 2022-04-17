@@ -1,6 +1,6 @@
 import { css, html, LitElement, TemplateResult } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Styles } from '../../common/styles';
+import { Styles } from '../styles';
 import { ButtonType } from '../button';
 
 

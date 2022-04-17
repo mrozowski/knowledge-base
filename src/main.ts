@@ -1,48 +1,36 @@
 require("@babel/polyfill");
 import { html, css, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import { Config } from './config/configuration';
-import './components/menu';
-import { Pages } from './components/content';
-import { SearchOption } from './components/start/search-option';
-import { Datasource } from './model/datasource';
+import './pages/menu';
+import { SearchOption } from './model/search-option';
+import { Controller } from './system/controller';
+import { PageModule } from './system/page';
+import { Home } from './pages/home/home';
+import { Editor } from './pages/editor/editor';
+import { Pages } from './page-definition';
+import { DocumentDetails } from './pages/document/document-details';
+import Router from './system/router';
+import { Login } from './pages/login/login';
+import KDatasource from './config/configuration';
 
 @customElement('main-module')
-export class Main extends LitElement {
+export class Main extends Controller {
 
-  static styles = css`
-  p { color: blue }
-  `;
-  private datasource: Datasource = Config.getDatasource();
-  @property()
-  name = 'Somebody';
+  private home: Home = new Home();
+  constructor() {
+    super();
+    //this.setDefault404Page(Pages.NOT_FOUND);
+    this.setDefaultPage(Pages.HOME);
+    this.enableHashRouting();
+    this.setPathPrefix("/knowledge-base");
+
+  }
 
   @property()
   searchTitle: string = "";
 
   @property()
   searchOption: SearchOption = SearchOption.DEFAULT;
-
-  @property({ type: Number })
-  page: Pages = Pages.MAIN;
-
-  showStartPage = () => {
-    this.page = Pages.MAIN;
-  }
-
-  showLoginPage = () => {
-    console.log("Go to login");
-    this.page = 3;
-  }
-
-  addIssue = () => {
-    console.log("Add a new issue");
-    this.page = Pages.CREATOR;
-  }
-
-  showIssueDetails = () => {
-    this.page = Pages.DETAILS;
-  }
 
   searchIssue = (text: string) => {
     console.log("Searching issue: " + text);
@@ -54,42 +42,39 @@ export class Main extends LitElement {
     this.requestUpdate("searchOption");
   }
 
-  protected firstUpdated(changedProperties: any): void {
-    window.addEventListener('popstate', this.historyChangeEvent);
+  private setHome(): Home {
+    this.searchOption.title = this.searchTitle;
+    let search = SearchOption.from(this.searchOption);
+    this.home.searchOption = search;
+    return this.home;
+  }
+
+  private logout = () => {
+    KDatasource.logout()
+      .then(() => {
+        this.requestUpdate();
+      });
 
   }
 
-  private historyChangeEvent = (e) => {
-    console.log("event handled");
-
-    const pagePath = window.location.pathname
-    if (pagePath == "/home") {
-      this.showStartPage();
-    } else if (pagePath == "/creator") {
-      this.addIssue();
-    } else if (pagePath.includes("/documents/")) {
-      const docId = pagePath.substring(11);
-      this.showIssueDetails();
-    }
-  }
 
   render() {
+    console.log("refresh main");
+
+    if (Router.isActive(Pages.LOGIN)) {
+      return PageModule(new Login(), Pages.LOGIN);
+    }
+
     return html`
     <top-menu 
-      .showStartPage=${this.showStartPage} 
+      .isLoggedIn=${KDatasource.isLogin()}
+      .logout=${this.logout}
       .searchIssue=${this.searchIssue} 
-      .showLoginPage=${this.showLoginPage}
-      .addIssue=${this.addIssue}
       .filterIssues=${this.filterIssues}>
     </top-menu>
-    <content-page 
-      .page=${this.page} 
-      .datasource=${this.datasource}
-      .showIssueDetails=${this.showIssueDetails}
-      .showStartPage=${this.showStartPage}
-      .searchText=${this.searchTitle}
-      .searchOption=${this.searchOption}>
-    </content-page>
+    ${PageModule(this.setHome(), Pages.HOME)}
+    ${PageModule(new Editor(), Pages.EDITOR)}
+    ${PageModule(new DocumentDetails(), Pages.DOCUMENT)}
       `;
   }
 }

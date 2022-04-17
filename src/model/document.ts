@@ -1,4 +1,4 @@
-export class Issue {
+export class Document {
     constructor(
         readonly author: string,
         readonly category: string,
