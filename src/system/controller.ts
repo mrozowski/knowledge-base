@@ -5,8 +5,6 @@ import Router from "./router";
 export abstract class Controller extends LitElement {
     // This class should be extented by main class that connects with html.
 
-    private pathPrefix: string = "";
-
     firstUpdated() {
         const pagePath = this.getFullPathName();
         window.addEventListener('router', this.handleRouterEvent);
@@ -25,7 +23,6 @@ export abstract class Controller extends LitElement {
 
     setPathPrefix(prefix: string) {
         Router.setPrefix(prefix);
-        this.pathPrefix = prefix;
     }
 
     enableHashRouting() {
@@ -45,10 +42,6 @@ export abstract class Controller extends LitElement {
 
     private historyChangeEvent = (event) => {
         let pagePath = this.getFullPathName(); //window.location.href.replace(window.location.origin, "");
-        //pagePath = Router.removePrefixFromPath(pagePath);
-        console.log(pagePath);
-        console.log(event);
-
         const properties = event.state;
         if (properties)
             Router.linkTo2(pagePath, properties);

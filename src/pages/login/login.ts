@@ -18,16 +18,11 @@ export class Login extends LitElement {
     private password: string = "";
 
     private login = () => {
-        console.log("Let me in!!!!!!!");
-
         KDatasource.login(this.user, this.password)
             .then(_user => {
-                console.log("loggin in");
-                console.log(_user);
                 LinkTo(Pages.HOME);
             }).catch(e => {
                 console.log(e);
-
             })
     }
 

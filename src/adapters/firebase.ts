@@ -50,10 +50,16 @@ export class FirebaseApi implements Datasource {
     private lastDoc?: DocumentData) { }
 
 
+  getCurrentUser(): UserAccount | undefined {
+    const user = auth.currentUser;
+    if (user)
+      return new UserAccount(user.email!, user.displayName!, user.uid)
+    return undefined;
+  }
+
   async logout(): Promise<void> {
     return auth.signOut();
   }
-
 
   async login(email: string, password: string): Promise<UserAccount> {
     const user = setPersistence(auth, browserLocalPersistence)
@@ -62,7 +68,7 @@ export class FirebaseApi implements Datasource {
           .then((userCredential) => {
             // Signed in 
             const _user = userCredential.user;
-            return new UserAccount(_user.email!, _user.displayName!);
+            return new UserAccount(_user.email!, _user.displayName!, _user.uid);
           })
           .catch((error) => {
             const errorCode = error.code;
@@ -73,7 +79,7 @@ export class FirebaseApi implements Datasource {
           });
       })
 
-    return new UserAccount((await user).email, (await user).username);
+    return new UserAccount((await user).email, (await user).username, (await user).id);
   }
 
   isLogin(): boolean {
@@ -259,6 +265,7 @@ export class FirebaseApi implements Datasource {
   private static issueMapper(json) {
     return new Document(
       json.author,
+      json.author_id,
       json.category,
       new Date(json.created_at.seconds * 1000),
       json.title,

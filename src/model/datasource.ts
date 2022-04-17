@@ -15,5 +15,6 @@ export interface Datasource {
     login(username: string, password: string): Promise<UserAccount>;
     logout(): Promise<void>;
     isLogin(): boolean;
+    getCurrentUser(): UserAccount | undefined;
     //login / logout
 }

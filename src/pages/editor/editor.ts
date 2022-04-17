@@ -9,7 +9,8 @@ import './markdown-editor'
 import { Styles } from '../../common/styles';
 import { ButtonType } from '../../common/button';
 import KDatasource from '../../config/configuration';
-import { GoBack } from '../../system/router';
+import { GoBack, LinkTo } from '../../system/router';
+import { Pages } from '../../page-definition';
 
 
 @customElement('editor-page')
@@ -18,14 +19,22 @@ export class Editor extends LitElement {
     private content: string = Editor.getDefaultTemplate();
     private tags: string[] = new Array();
 
-    createUniqueFileName(): string {
-        // timestamp is good way to create unique name. However, if many people use website it might happend that two people upload file at this same time.
-        // then there will be issue on server side - duplication of file name. However, for now only I'll have access to upload files. So it's good enought.
-        let timestamp = Date.now();
-        return timestamp + ".png";
-    }
+    @property({ type: Object })
+    document?: Document;
+
+    @property()
+    mContent: any;
 
     firstUpdated() {
+        console.log("editor: ");
+
+        console.log(this.document);
+        console.log(this.mContent);
+
+        if (this.mContent) {
+            this.content = this.mContent;
+            this.requestUpdate();
+        }
         let category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         for (let item in Category) {
             if (isNaN(Number(item))) {
@@ -37,18 +46,10 @@ export class Editor extends LitElement {
         }
     }
 
-    updateContent = (newContent: string) => {
-        this.content = newContent;
-    }
 
-    storeFile = (file: Blob): Promise<string> => {
-        let fileName = this.createUniqueFileName();
-        let ref = KDatasource.storePicture(file, fileName);
-        return ref;
-    }
-
-    submitIssue() {
-        const author = "funner";
+    submitNewDocument() {
+        const user = KDatasource.getCurrentUser();
+        if (user === undefined) throw new Error("User is not logged in");
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
         const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
@@ -60,7 +61,8 @@ export class Editor extends LitElement {
 
         mdUrl.then(md => {
             let document: Document = new Document(
-                author,
+                user.username,
+                user.id,
                 category.value,
                 new Date(),
                 title.value,
@@ -79,36 +81,17 @@ export class Editor extends LitElement {
         })
     }
 
-    parseDescription(content: string) {
-        const descriptionHeader = "## Description";
-        const descriptionHeaderIndex = content.indexOf(descriptionHeader);
-
-        const descriptionStart = descriptionHeaderIndex + descriptionHeader.length + 1;
-        const descriptionEnd = content.indexOf("\n\n", descriptionStart);
-
-        let code = content.substring(descriptionStart, descriptionEnd);
-        const wrongElement = code.indexOf("\n#", descriptionStart);
-        if (wrongElement != -1) {
-            code = code.substring(0, wrongElement);
-        }
-        if (code.length > 320) {
-            return code.substring(0, 320);
-        }
-        return code;
-    }
-
-    tagListener(value: string) {
-
-    }
-
     render() {
         console.log("Creator render");
+        if (!KDatasource.isLogin()) {
+            GoBack();
+        }
         return html`
         <div class="container">
             <div class="card">
                 <div class="top-bar">
                         <button-x .text=${"Cancel"} @click=${() => GoBack()} .type=${ButtonType.SECONDARY}></button-x>
-                        <button-x .text=${"Submit"} @click=${this.submitIssue}></button-x>
+                        <button-x .text=${"Submit"} @click=${this.submitNewDocument}></button-x>
                 </div>
                 <div class="card-content">
                     <div class="options">
@@ -234,6 +217,46 @@ export class Editor extends LitElement {
 
             
        }`]
+    }
+
+
+    private parseDescription(content: string) {
+        const descriptionHeader = "## Description";
+        const descriptionHeaderIndex = content.indexOf(descriptionHeader);
+
+        const descriptionStart = descriptionHeaderIndex + descriptionHeader.length + 1;
+        const descriptionEnd = content.indexOf("\n\n", descriptionStart);
+
+        let code = content.substring(descriptionStart, descriptionEnd);
+        const wrongElement = code.indexOf("\n#", descriptionStart);
+        if (wrongElement != -1) {
+            code = code.substring(0, wrongElement);
+        }
+        if (code.length > 320) {
+            return code.substring(0, 320);
+        }
+        return code;
+    }
+
+    private tagListener(value: string) {
+
+    }
+
+    private createUniqueFileName(): string {
+        // timestamp is good way to create unique name. However, if many people use website it might happend that two people upload file at this same time.
+        // then there will be issue on server side - duplication of file name. However, for now only I'll have access to upload files. So it's good enought.
+        let timestamp = Date.now();
+        return timestamp + ".png";
+    }
+
+    private updateContent = (newContent: string) => {
+        this.content = newContent;
+    }
+
+    private storeFile = (file: Blob): Promise<string> => {
+        let fileName = this.createUniqueFileName();
+        let ref = KDatasource.storePicture(file, fileName);
+        return ref;
     }
 
     private static getDefaultTemplate(): string {

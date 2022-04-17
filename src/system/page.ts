@@ -7,10 +7,13 @@ function updateComponentProperties(pageComponent: LitElement) {
         const properties = Router.getProperties();
         properties.forEach((value, key) => {
             console.log(value);
-            if (value instanceof String) {
+            if (typeof value == 'string') {
                 pageComponent.setAttribute(key, value as string);
+                console.log("it is string");
             } else {
                 pageComponent.setAttribute(key, JSON.stringify(value));
+                console.log("it is object");
+
             }
 
         });

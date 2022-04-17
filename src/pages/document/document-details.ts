@@ -7,7 +7,8 @@ import { ButtonType } from '../../common/button';
 import './markdown-viewer'
 import { Styles } from '../../common/styles';
 import KDatasource from '../../config/configuration';
-import { GoBack } from '../../system/router';
+import { GoBack, LinkTo, Properties } from '../../system/router';
+import { Pages } from '../../page-definition';
 
 
 @customElement('docuemnt-details-page')
@@ -23,7 +24,7 @@ export class DocumentDetails extends LitElement {
     id: string = "";
 
     @property()
-    markdownDescription: any;
+    markdownDescription: string = "";
 
 
 
@@ -55,6 +56,10 @@ export class DocumentDetails extends LitElement {
         });
     }
 
+    optionButtons = () => {
+
+    }
+
 
     render() {
         console.log("Details render");
@@ -76,8 +81,9 @@ export class DocumentDetails extends LitElement {
                 <div class="top-bar">
                     <button-x .text=${"Back"} @click=${() => GoBack()}></button-x>
                     <div class="separator"></div>
+
                     <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => GoBack()}></button-x>
-                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => GoBack()}></button-x>
+                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => LinkTo(Pages.EDITOR, Properties.create("document", this.document).add("mContent", this.markdownDescription))}></button-x>
                 </div>
             <div class="card-content">
                 <h1 class="title">${this.document.title}</h1>

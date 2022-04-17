@@ -1,6 +1,7 @@
 export class Document {
     constructor(
         readonly author: string,
+        readonly authorId: string,
         readonly category: string,
         readonly createdAt: Date,
         readonly title: string,
