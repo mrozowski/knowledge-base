@@ -1,5 +1,5 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query } from 'firebase/firestore/lite';
+import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query, updateDoc } from 'firebase/firestore/lite';
 import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString } from 'firebase/storage'
 import { browserLocalPersistence, getAuth, onAuthStateChanged, sendEmailVerification, setPersistence, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { DocumentNotFoundError, NoMoreDocsHasBeenFound } from "../pages/home/document-exception";
@@ -48,6 +48,9 @@ export class FirebaseApi implements Datasource {
   constructor(
     public readonly pageSize: number = 3,
     private lastDoc?: DocumentData) { }
+
+
+
 
 
   getCurrentUser(): UserAccount | undefined {
@@ -125,18 +128,30 @@ export class FirebaseApi implements Datasource {
     return (await upload).ref.fullPath;
   }
 
-  async createNewIssue(issue: Document): Promise<void> {
-    return setDoc(doc(db, 'issues', issue.id), {
-      author: issue.author,
-      category: issue.category,
-      created_at: Timestamp.fromDate(issue.createdAt),
-      title: issue.title,
-      tags: issue.tags,
-      id: issue.id,
-      content: issue.content,
-      description: issue.description,
-      metadata: Metadata.create(issue.title),
-      public: issue.isPublic,
+  async modifyDocument(document: Document): Promise<void> {
+    const reference = doc(db, "issues", document.id);
+    updateDoc(reference, {
+      category: document.category,
+      title: document.title,
+      tags: document.tags,
+      description: document.description,
+      metadata: Metadata.create(document.title),
+      public: document.isPublic,
+    })
+  }
+
+  async createNewIssue(document: Document): Promise<void> {
+    return setDoc(doc(db, 'issues', document.id), {
+      author: document.author,
+      category: document.category,
+      created_at: Timestamp.fromDate(document.createdAt),
+      title: document.title,
+      tags: document.tags,
+      id: document.id,
+      content: document.content,
+      description: document.description,
+      metadata: Metadata.create(document.title),
+      public: document.isPublic,
       views: 0,
       author_id: auth.currentUser?.uid
     });

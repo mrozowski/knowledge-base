@@ -1,15 +1,15 @@
 import { Document } from "./document"
-export class CompactDocument {
+export class CompoundDocument {
 
     constructor(
         readonly document: Document,
-        readonly content: Text
+        readonly content: String
     ) { }
 
-    getContentFileId = () => {
-        let content = this.document.content;
-        content = content.replace(".md", "");
-        const lastIndexOfSlash = content.lastIndexOf("/");
-        return content.substring(lastIndexOfSlash);
-    }
+    // getContentFileId = () => {
+    //     // let content = this.document.content;
+    //     // content = content.replace(".md", "");
+    //     // const lastIndexOfSlash = content.lastIndexOf("/");
+    //     // return content.substring(lastIndexOfSlash);
+    // }
 }

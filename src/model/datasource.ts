@@ -11,7 +11,8 @@ export interface Datasource {
     getFileContent(filePath: string): Promise<string>;
     storePicture(file: Blob, name: string): Promise<string>
     uploadMarkdown(text: string, id: string): Promise<string>;
-    createNewIssue(issue: Document): Promise<void>
+    createNewIssue(issue: Document): Promise<void>;
+    modifyDocument(document: Document): Promise<void>;
     login(username: string, password: string): Promise<UserAccount>;
     logout(): Promise<void>;
     isLogin(): boolean;

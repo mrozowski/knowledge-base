@@ -113,6 +113,8 @@ class _Router {
             this.previousPage = this.currentPage;
             this.currentPage = requestedPage;
             if (this.previousPage != requestedPage) {
+                console.log("replace to " + path);
+
                 window.history.replaceState(properties, "", this.fullPrefix + path);
             }
 
@@ -192,6 +194,10 @@ export function LinkTo(path: Pages, property1?: any, property2?: Properties): vo
 
     Router.linkTo(path);
 };
+
+export function ReplaceTo(path: Pages, pathVariable?: PathVariable, properties?: Properties): void {
+    Router.linkTo2(updatePathWithVariable(path, pathVariable!), properties?.getPropertiesAsMap());
+}
 
 export function GoBack(): void {
     window.history.back();

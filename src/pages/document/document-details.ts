@@ -9,6 +9,7 @@ import { Styles } from '../../common/styles';
 import KDatasource from '../../config/configuration';
 import { GoBack, LinkTo, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
+import { CompoundDocument } from '../../model/compact-document';
 
 
 @customElement('docuemnt-details-page')
@@ -56,8 +57,21 @@ export class DocumentDetails extends LitElement {
         });
     }
 
-    optionButtons = () => {
+    private isDocumentBelongToCurrentUser = (): boolean => {
+        return KDatasource.isLogin() && KDatasource.getCurrentUser()?.id == this.document.authorId
+    }
 
+    optionButtons = () => {
+        if (this.isDocumentBelongToCurrentUser()) {
+            return html`
+            <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => GoBack()}></button-x>
+            <button-x 
+                type=${ButtonType.SECONDARY} 
+                .text=${"Edit"}
+                @click=${() => LinkTo(Pages.EDITOR, Properties.create("document", this.document).add("mContent", this.markdownDescription))}>
+            </button-x>
+            `
+        }
     }
 
 
@@ -82,8 +96,7 @@ export class DocumentDetails extends LitElement {
                     <button-x .text=${"Back"} @click=${() => GoBack()}></button-x>
                     <div class="separator"></div>
 
-                    <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => GoBack()}></button-x>
-                    <button-x type=${ButtonType.SECONDARY} .text=${"Edit"} @click=${() => LinkTo(Pages.EDITOR, Properties.create("document", this.document).add("mContent", this.markdownDescription))}></button-x>
+                    ${this.optionButtons()}
                 </div>
             <div class="card-content">
                 <h1 class="title">${this.document.title}</h1>

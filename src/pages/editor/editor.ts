@@ -9,8 +9,9 @@ import './markdown-editor'
 import { Styles } from '../../common/styles';
 import { ButtonType } from '../../common/button';
 import KDatasource from '../../config/configuration';
-import { GoBack, LinkTo } from '../../system/router';
+import { GoBack, LinkTo, PathVariable, Properties, ReplaceTo } from '../../system/router';
 import { Pages } from '../../page-definition';
+
 
 
 @customElement('editor-page')
@@ -26,15 +27,6 @@ export class Editor extends LitElement {
     mContent: any;
 
     firstUpdated() {
-        console.log("editor: ");
-
-        console.log(this.document);
-        console.log(this.mContent);
-
-        if (this.mContent) {
-            this.content = this.mContent;
-            this.requestUpdate();
-        }
         let category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         for (let item in Category) {
             if (isNaN(Number(item))) {
@@ -44,8 +36,63 @@ export class Editor extends LitElement {
                 category.add(element);
             }
         }
+
+        if (this.mContent && this.document) {
+            // Edit existing document
+            console.log("eddit domucemt");
+
+            this.setDocumentValues();
+            this.requestUpdate();
+        }
     }
 
+    setDocumentValues() {
+        const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
+        const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
+        const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+
+        title.value = this.document!.title;
+        category.value = this.document!.category;
+        tags.value = this.document!.tags.join(", ");
+        this.content = this.mContent;
+    }
+
+    updateDocument() {
+        const user = KDatasource.getCurrentUser();
+        if (user === undefined) throw new Error("User is not logged in");
+        const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
+        const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
+        const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const parsedTags: string[] = tags.value.split("/[\s,]+/");
+        const id: string = this.document!.id
+
+
+        const description = this.parseDescription(this.content);
+
+        const mdUrl = KDatasource.uploadMarkdown(this.content, id);
+        mdUrl.then(md => {
+            let document: Document = new Document(
+                this.document!.author,
+                this.document!.authorId,
+                category.value,
+                this.document!.createdAt,
+                title.value,
+                parsedTags,
+                this.document!.views,
+                id,
+                md,
+                description,
+                this.document!.isPublic
+            );
+
+            KDatasource.modifyDocument(document).then(() => {
+                console.log("Document modified");
+                // show some prompt 
+                window.history.back();
+                ReplaceTo(Pages.DOCUMENT, PathVariable.create(id), Properties.create("id", id).add("document", document).add("markdownDescription", this.content));
+            })
+        })
+    }
 
     submitNewDocument() {
         const user = KDatasource.getCurrentUser();
@@ -76,9 +123,17 @@ export class Editor extends LitElement {
 
             KDatasource.createNewIssue(document).then(e => {
                 console.log("Issue created");
-                // show some prompt 
-            })
-        })
+                GoBack();
+            });
+        });
+    }
+
+    onSaveClick = () => {
+        if (this.mContent && this.document) {
+            this.updateDocument();
+        } else {
+            this.submitNewDocument();
+        }
     }
 
     render() {
@@ -91,7 +146,7 @@ export class Editor extends LitElement {
             <div class="card">
                 <div class="top-bar">
                         <button-x .text=${"Cancel"} @click=${() => GoBack()} .type=${ButtonType.SECONDARY}></button-x>
-                        <button-x .text=${"Submit"} @click=${this.submitNewDocument}></button-x>
+                        <button-x .text=${"Save"} @click=${this.onSaveClick}></button-x>
                 </div>
                 <div class="card-content">
                     <div class="options">

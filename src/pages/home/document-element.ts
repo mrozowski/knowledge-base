@@ -47,7 +47,7 @@ export class IssueElement extends LitElement {
                     <p class="issue-content">${this.description}</p>
                 </div>
                 <div class="card-info">
-                    <p class="issue-date">${this.createdAt.toLocaleDateString()}</p>
+                    <p class="issue-date">${new Date(this.createdAt).toLocaleDateString()}</p>
                     <category-badge class="cat" .category=${this.category}></category-badge>
                 </div>
             </div>

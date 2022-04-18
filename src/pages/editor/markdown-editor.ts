@@ -120,7 +120,7 @@ export class MarkdownEditor extends LitElement {
             </section>
         
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false"
-                @keydown=${(e) => this.textareaListener(e)} class=${this.isPreview ? "invisible" : ""} ></textarea>
+                @keyup=${(e) => this.textareaListener(e)} class=${this.isPreview ? "invisible" : ""} ></textarea>
         
             <div class=${this.isPreview ? "preview" : "invisible"}>
                 ${this.isPreview ? this.getPreview() : null}
