@@ -173,7 +173,12 @@ class _Router {
 var Router = new _Router();
 export default Router;
 
-
+/**
+     * Change current page and save it to history. 
+     * @param path The page path.
+     * @param pathVariable Replace path variable with value passed in this parameter. 
+     * @param properties Pass properties to Page Component.
+     */
 export function LinkTo(path: Pages, pathVariable?: PathVariable, properties?: Properties): void;
 
 export function LinkTo(path: Pages, property1?: Properties): void;
@@ -195,9 +200,32 @@ export function LinkTo(path: Pages, property1?: any, property2?: Properties): vo
     Router.linkTo(path);
 };
 
-export function ReplaceTo(path: Pages, pathVariable?: PathVariable, properties?: Properties): void {
-    Router.linkTo2(updatePathWithVariable(path, pathVariable!), properties?.getPropertiesAsMap());
-}
+
+/**
+ * Change page wihout saving current page in history
+ * @param path The page path.
+ * @param pathVariable Replace path variable with value passed in this parameter. 
+ * @param properties Pass properties to Page Component.
+ */
+export function ReplaceTo(path: Pages, pathVariable?: PathVariable, properties?: Properties): void;
+
+export function ReplaceTo(path: Pages, property1?: Properties): void;
+
+export function ReplaceTo(path: Pages, property1?: any, property2?: Properties): void {
+    if (property1 && property2) {
+        Router.linkTo2(updatePathWithVariable(path, property1), property2.getPropertiesAsMap());
+        return;
+    } else if (property1) {
+        if (property1 instanceof Properties) {
+            Router.linkTo2(path, property1?.getPropertiesAsMap());
+            return;
+        } else if (property1 instanceof PathVariable) {
+            Router.linkTo2(updatePathWithVariable(path, property1));
+            return;
+        }
+    }
+    Router.linkTo2(path);
+};
 
 export function GoBack(): void {
     window.history.back();
@@ -222,6 +250,12 @@ export class Properties {
 
     private constructor(private map: Map<string, any>) { }
 
+    /**
+     * Pass single parameter to component. To add another property use 'add()' method.
+     * @param name Name of the property in destination component.
+     * @param value Object passed to property.
+     * @return Properties object containing map with properties.
+     */
     public static create(name: string, value: any): Properties {
         return new Properties(new Map([[name, value]]))
     }

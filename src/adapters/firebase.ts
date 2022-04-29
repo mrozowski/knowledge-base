@@ -134,6 +134,7 @@ export class FirebaseApi implements Datasource {
       category: document.category,
       title: document.title,
       tags: document.tags,
+      modified_at: Timestamp.fromDate(document.modifiedAt),
       description: document.description,
       metadata: Metadata.create(document.title),
       public: document.isPublic,
@@ -141,10 +142,12 @@ export class FirebaseApi implements Datasource {
   }
 
   async createNewIssue(document: Document): Promise<void> {
+    const createTime = Timestamp.fromDate(document.createdAt);
     return setDoc(doc(db, 'issues', document.id), {
       author: document.author,
       category: document.category,
-      created_at: Timestamp.fromDate(document.createdAt),
+      created_at: createTime,
+      modified_at: createTime,
       title: document.title,
       tags: document.tags,
       id: document.id,
@@ -283,6 +286,7 @@ export class FirebaseApi implements Datasource {
       json.author_id,
       json.category,
       new Date(json.created_at.seconds * 1000),
+      new Date(json.modified_at.seconds * 1000),
       json.title,
       json.tags,
       json.views,

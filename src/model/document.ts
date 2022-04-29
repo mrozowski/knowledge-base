@@ -4,6 +4,7 @@ export class Document {
         readonly authorId: string,
         readonly category: string,
         readonly createdAt: Date,
+        readonly modifiedAt: Date,
         readonly title: string,
         readonly tags: string[],
         readonly views: number,

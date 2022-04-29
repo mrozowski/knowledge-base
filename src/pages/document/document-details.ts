@@ -28,8 +28,6 @@ export class DocumentDetails extends LitElement {
     markdownDescription: string = "";
 
 
-
-
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
         if (this.document) {
             this.getContent(this.document.content);
@@ -58,7 +56,22 @@ export class DocumentDetails extends LitElement {
     }
 
     private isDocumentBelongToCurrentUser = (): boolean => {
-        return KDatasource.isLogin() && KDatasource.getCurrentUser()?.id == this.document.authorId
+        return KDatasource.isLogin() && KDatasource.getCurrentUser()?.id == this.document.authorId;
+    }
+
+    private removePictures = () => {
+        const pictureLinks: string[] = [];
+        this.markdownDescription
+        let startIndex = this.markdownDescription.indexOf("![image](");
+        while (startIndex != -1) {
+            let endIndex = this.markdownDescription.indexOf(")", startIndex + 9);
+
+        }
+    }
+
+    private deleteDocument = () => {
+        // check if there are pictures and remove them
+        //this.removePictures()
     }
 
     optionButtons = () => {
@@ -72,6 +85,7 @@ export class DocumentDetails extends LitElement {
             </button-x>
             `
         }
+        return null;
     }
 
 
@@ -102,7 +116,7 @@ export class DocumentDetails extends LitElement {
                 <h1 class="title">${this.document.title}</h1>
                 
                 <section>
-                    <span class="tags"> ${this.document.tags} </span>
+                    <span class="tags"> ${this.document.tags.join(", ")} </span>
                     <div class="separator"></div>
                     <span class="created-date"> ${new Date(this.document.createdAt).toLocaleDateString()} </span>
                     <category-badge .category=${Category[this.document.category]}></category-badge>

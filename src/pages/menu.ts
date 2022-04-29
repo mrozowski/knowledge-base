@@ -98,7 +98,7 @@ export class TopMenu extends LitElement {
     return [Styles.VARIABLES, css`
     nav {
       width: 100%;
-      height: 5rem;
+      height: 4rem;
       background-color: var(--main-accent-color);
       margin-bottom: 1rem;
     }
@@ -176,6 +176,7 @@ export class TopMenu extends LitElement {
 
     .bar-wrap{
       min-width: 24rem;
+      margin-left: 2rem;
     }
 
     .hidden {

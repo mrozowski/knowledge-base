@@ -39,7 +39,7 @@ export class Editor extends LitElement {
 
         if (this.mContent && this.document) {
             // Edit existing document
-            console.log("eddit domucemt");
+
 
             this.setDocumentValues();
             this.requestUpdate();
@@ -76,6 +76,7 @@ export class Editor extends LitElement {
                 this.document!.authorId,
                 category.value,
                 this.document!.createdAt,
+                new Date(),
                 title.value,
                 parsedTags,
                 this.document!.views,
@@ -107,11 +108,13 @@ export class Editor extends LitElement {
         let mdUrl = KDatasource.uploadMarkdown(this.content, id);
 
         mdUrl.then(md => {
+            const createTime = new Date();
             let document: Document = new Document(
                 user.username,
                 user.id,
                 category.value,
-                new Date(),
+                createTime,
+                createTime,
                 title.value,
                 parsedTags,
                 0,
