@@ -49,6 +49,7 @@ export class CategoryBadge extends LitElement {
             border-radius: 0.5rem;
             line-height: 2rem;
             font-size: 1em;
+            user-select: none;
         }
 
         .java{

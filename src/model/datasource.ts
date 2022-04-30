@@ -17,5 +17,7 @@ export interface Datasource {
     logout(): Promise<void>;
     isLogin(): boolean;
     getCurrentUser(): UserAccount | undefined;
+    removePictures(names: string[]): Promise<void>;
+    removeDocument(id: string): Promise<void>;
     //login / logout
 }

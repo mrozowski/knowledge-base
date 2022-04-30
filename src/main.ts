@@ -12,6 +12,7 @@ import { DocumentDetails } from './pages/document/document-details';
 import Router from './system/router';
 import { Login } from './pages/login/login';
 import KDatasource from './config/configuration';
+import './common/toast/toast'
 
 @customElement('main-module')
 export class Main extends Controller {
@@ -71,6 +72,8 @@ export class Main extends Controller {
     ${PageModule(this.setHome(), Pages.HOME)}
     ${PageModule(new Editor(), Pages.EDITOR)}
     ${PageModule(new DocumentDetails(), Pages.DOCUMENT)}
+
+    <toast-box></toast-box>
       `;
   }
 }

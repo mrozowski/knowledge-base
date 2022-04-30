@@ -11,6 +11,7 @@ export class ApiMock implements Datasource {
     private user?: UserAccount;
 
     constructor() {
+        this.login("", "");
         this.issues.push(new Document("author", "userId", "Java", new Date(), new Date(), "Some java issue", ["a", "b"], 1, "5e479fb3-4852-4b7e-ad39-fdbc5c68e969", "some/desc", "Here is some short description of issie", true));
         this.issues.push(new Document("author", "userId2", "Bash", new Date(), new Date(), "How to do that", ["Spring", "tutorial", "how-to"], 2, "e64a6208-ab7c-4958-873e-1e0126c7c684", "some/desc", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Fusce varius blandit velit. Nunc nec lacus vel risus aliquet molestie. Vestibulum non ligula et quam aliquet tristique. Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
         this.issues.push(new Document("author", "userId2", "CSS", new Date(), new Date(), "And How to do this to make it work and long so we can see if css work properly with very long titles", ["a", "b"], 3, "6faa8dc9-f439-4b83-a019-e882e046c40d", "some/desc", "Fusce varius blandit velit. Nunc nec lacus vel risus aliquet molestie.", true));
@@ -19,6 +20,16 @@ export class ApiMock implements Datasource {
         this.issues.push(new Document("author", "userId", "Android", new Date(), new Date(), "Spring jdbc", ["a", "b"], 6, "03812038-ce9e-4f4f-8b82-4fba68ab990f", "some/desc", "Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
         this.issues.push(new Document("author", "userId", "Web", new Date(), new Date(), "Listener", ["a", "b"], 7, "8f9c01d1-2edf-4ab9-a6d9-688a85b7130e", "some/desc", "Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
         this.issues.push(new Document("author", "userId", "Python", new Date(), new Date(), "Generate random UUID", ["a", "b"], 8, "a94bd733-ec72-4f54-b5ce-906181753866", "some/desc", "Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
+    }
+
+    async removeDocument(id: string): Promise<void> {
+        console.log("document deleted");
+
+    }
+
+    async removePictures(names: string[]): Promise<void> {
+        console.log("Files: " + names + " deleted");
+        //throw new Error();
     }
 
     async modifyDocument(document: Document): Promise<void> {
@@ -89,11 +100,18 @@ export class ApiMock implements Datasource {
     getFileContent(filePath: string): Promise<string> {
         return new Promise((resolve, reject) => {
             let result: string = `
-# here is some tipoc
+# Description
 
 1. ome
 1. two
 
+\`![image](https://firebasestorage.googleapis.com/v0/b/knowladgedb.appspot.com/o/issues%2Fpictures%2F1651303003698.png?alt=media&token=d9a5d646-4ec2-43e2-a99b-f3cfadc69b0d)\`
+
+\` Hello \`
+
+# Solution
+
+\`![image](https://firebasestorage.googleapis.com/v0/b/knowladgedb.appspot.com/o/issues%2Fpictures%2F1651303003123.png?alt=media&token=d9a5d646-4ec2-43e2-a99b-f3cfadc69b0d)\`
 \`\`\` some code \`\`\`
             `;
             resolve(result);
@@ -104,6 +122,8 @@ export class ApiMock implements Datasource {
         throw new Error("Method not implemented.");
     }
     uploadMarkdown(text: string, id: string): Promise<string> {
+        console.log("markdown uploaded");
+
         return new Promise((resolve, reject) => {
             resolve("some-path/to/file/" + id + ".md");
         });

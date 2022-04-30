@@ -4,12 +4,17 @@ import { Document } from '../../model/document';
 import { Category } from '../../model/category';
 import "../../common/category-badge"
 import { ButtonType } from '../../common/button';
+import '../../common/popup/popup-default'
+import { PopupDefault } from '../../common/popup/popup-default'
+import '../../common/toast/toast'
 import './markdown-viewer'
 import { Styles } from '../../common/styles';
 import KDatasource from '../../config/configuration';
 import { GoBack, LinkTo, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
 import { CompoundDocument } from '../../model/compact-document';
+import { findPhotosInContent } from '../../common/functions';
+import { Toast } from '../../common/toast/toast';
 
 
 @customElement('docuemnt-details-page')
@@ -59,25 +64,42 @@ export class DocumentDetails extends LitElement {
         return KDatasource.isLogin() && KDatasource.getCurrentUser()?.id == this.document.authorId;
     }
 
-    private removePictures = () => {
-        const pictureLinks: string[] = [];
-        this.markdownDescription
-        let startIndex = this.markdownDescription.indexOf("![image](");
-        while (startIndex != -1) {
-            let endIndex = this.markdownDescription.indexOf(")", startIndex + 9);
+    private openConfirmBox = () => {
+        const confirmBox = this.shadowRoot?.querySelector('popup-box') as PopupDefault;
 
-        }
+        confirmBox.clickAction = this.deleteDocument
+        confirmBox.title = "Confirm action";
+        confirmBox.text = "Do you want to delete this document?";
+        confirmBox.open = true;
     }
 
+
     private deleteDocument = () => {
-        // check if there are pictures and remove them
-        //this.removePictures()
+        // check if there are pictures and remove them and then remove document
+        const foundPhotos = findPhotosInContent(this.markdownDescription);
+        KDatasource.removePictures(foundPhotos)
+            .then(() => KDatasource.removeDocument(this.document.id)
+                .then(() => {
+                    this.showToast();
+                    GoBack();
+                }));
+    }
+
+    private showToast = () => {
+        const toast = this.parentNode?.querySelector('toast-box') as Toast;
+        toast.text = "Document removed succesfully.";
+        toast.show()
+        console.log(toast);
+    }
+
+    private handleDeleteButton = () => {
+        this.openConfirmBox();
     }
 
     optionButtons = () => {
         if (this.isDocumentBelongToCurrentUser()) {
             return html`
-            <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => GoBack()}></button-x>
+            <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => this.handleDeleteButton()}></button-x>
             <button-x 
                 type=${ButtonType.SECONDARY} 
                 .text=${"Edit"}
@@ -104,6 +126,8 @@ export class DocumentDetails extends LitElement {
         }
 
         return html`
+        <popup-box></popup-box>
+        
         <div class="container">
         <div class="card">
                 <div class="top-bar">

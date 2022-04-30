@@ -1,6 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, Firestore, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query, updateDoc } from 'firebase/firestore/lite';
-import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString } from 'firebase/storage'
+import { getFirestore, collection, getDocs, setDoc, Firestore, deleteDoc, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query, updateDoc, writeBatch } from 'firebase/firestore/lite';
+import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString, deleteObject } from 'firebase/storage'
 import { browserLocalPersistence, getAuth, onAuthStateChanged, sendEmailVerification, setPersistence, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
 import { DocumentNotFoundError, NoMoreDocsHasBeenFound } from "../pages/home/document-exception";
 import { DateOption, OrderBy, SearchOption } from "../model/search-option";
@@ -48,7 +48,6 @@ export class FirebaseApi implements Datasource {
   constructor(
     public readonly pageSize: number = 3,
     private lastDoc?: DocumentData) { }
-
 
 
 
@@ -122,6 +121,17 @@ export class FirebaseApi implements Datasource {
     return getDownloadURL((await upload).ref);
   }
 
+  async removePictures(names: string[]): Promise<void> {
+    if (names.length >= 500) throw Error("Cannot delete more than 500 files at once");
+    const a = names.map(name => {
+      let reference: StorageReference = ref(store, `issues/pictures/${name}`);
+      return deleteObject(reference);
+    });
+
+    return a[0];
+  }
+
+
   async uploadMarkdown(text: string, id: string): Promise<string> {
     let reference: StorageReference = ref(store, `issues/markdowns/${id}.md`);
     let upload = uploadString(reference, text);
@@ -139,6 +149,11 @@ export class FirebaseApi implements Datasource {
       metadata: Metadata.create(document.title),
       public: document.isPublic,
     })
+  }
+
+  async removeDocument(id: string): Promise<void> {
+    const reference = doc(db, "issues", id);
+    deleteDoc(reference);
   }
 
   async createNewIssue(document: Document): Promise<void> {

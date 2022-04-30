@@ -11,6 +11,7 @@ import { ButtonType } from '../../common/button';
 import KDatasource from '../../config/configuration';
 import { GoBack, LinkTo, PathVariable, Properties, ReplaceTo } from '../../system/router';
 import { Pages } from '../../page-definition';
+import { findPhotosInContent } from '../../common/functions';
 
 
 
@@ -19,6 +20,7 @@ export class Editor extends LitElement {
 
     private content: string = Editor.getDefaultTemplate();
     private tags: string[] = new Array();
+    private photos: string[] = new Array();
 
     @property({ type: Object })
     document?: Document;
@@ -40,11 +42,11 @@ export class Editor extends LitElement {
         if (this.mContent && this.document) {
             // Edit existing document
 
-
             this.setDocumentValues();
             this.requestUpdate();
         }
     }
+
 
     setDocumentValues() {
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
@@ -55,6 +57,7 @@ export class Editor extends LitElement {
         category.value = this.document!.category;
         tags.value = this.document!.tags.join(", ");
         this.content = this.mContent;
+        this.photos = findPhotosInContent(this.content);
     }
 
     updateDocument() {
@@ -67,6 +70,7 @@ export class Editor extends LitElement {
         const id: string = this.document!.id
 
 
+        this.removeUnusedPhotos();
         const description = this.parseDescription(this.content);
 
         const mdUrl = KDatasource.uploadMarkdown(this.content, id);
@@ -93,6 +97,31 @@ export class Editor extends LitElement {
                 ReplaceTo(Pages.DOCUMENT, PathVariable.create(id), Properties.create("id", id).add("document", document).add("markdownDescription", this.content));
             })
         })
+    }
+
+    /** It removes photos that were removed during editing document.
+         *  In the future it might be good to remove picture in a single batch then removing one by one.
+     */
+    private removeUnusedPhotos() {
+        const editedPhotos = findPhotosInContent(this.content);
+        const removedPhotos = this.getRemovedPhotos(editedPhotos);
+        if (removedPhotos.length == 0) return;
+
+        removedPhotos.forEach(photoName => {
+            KDatasource.removePicture(photoName);
+        })
+    }
+
+    /** 
+        It returns list of pictures name that were removed from content after editing.
+    */
+    private getRemovedPhotos(editedPhotos: string[]): string[] {
+        const result: string[] = [];
+        this.photos.forEach(photo => {
+            const isNotExist = editedPhotos.indexOf(photo) === -1;
+            if (isNotExist) result.push(photo);
+        });
+        return result;
     }
 
     submitNewDocument() {
