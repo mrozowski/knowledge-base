@@ -6,6 +6,7 @@ export class Styles extends LitElement {
          :host{
              /* new design variables */
             --main-accent-color: #4C367E;
+            --error-accent-color: #70367e;
             --light-accent-color: #62499D;
             --popup-background: #2a2730;
             --card-background: rgba(255, 255, 255, 0.05);
@@ -64,4 +65,8 @@ export class Styles extends LitElement {
             margin: 0.5rem auto;
         }
     `]
+
+    public static SPINNER = css`
+    .spinner{ margin-top: 8rem; display: flex; justify-content: center; padding: 1rem;}
+    `
 }

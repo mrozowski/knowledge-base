@@ -6,7 +6,6 @@ import "../../common/category-badge"
 import { ButtonType } from '../../common/button';
 import '../../common/popup/popup-default'
 import { PopupDefault } from '../../common/popup/popup-default'
-import '../../common/toast/toast'
 import './markdown-viewer'
 import { Styles } from '../../common/styles';
 import KDatasource from '../../config/configuration';
@@ -14,12 +13,14 @@ import { GoBack, LinkTo, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
 import { CompoundDocument } from '../../model/compact-document';
 import { findPhotosInContent } from '../../common/functions';
-import { Toast } from '../../common/toast/toast';
+import { ShowToast, ShowWarningToast } from '../../common/toast/toast';
 
 
 @customElement('docuemnt-details-page')
 export class DocumentDetails extends LitElement {
 
+    private static REMOVED_MESSAGE: string = "Document removed.";
+    private static REMOVED_ERROR_MESSAGE: string = "Failed to remove the document.";
     private errorDescription: string = "";
     private isError: boolean = false;
 
@@ -30,7 +31,7 @@ export class DocumentDetails extends LitElement {
     id: string = "";
 
     @property()
-    markdownDescription: string = "";
+    markdownDescription!: string;
 
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
@@ -80,17 +81,17 @@ export class DocumentDetails extends LitElement {
         KDatasource.removePictures(foundPhotos)
             .then(() => KDatasource.removeDocument(this.document.id)
                 .then(() => {
-                    this.showToast();
+                    ShowToast(DocumentDetails.REMOVED_MESSAGE);
                     GoBack();
-                }));
+                })
+                .catch(e => {
+                    ShowWarningToast(DocumentDetails.REMOVED_ERROR_MESSAGE);
+                }))
+            .catch(e => {
+                ShowWarningToast(DocumentDetails.REMOVED_ERROR_MESSAGE);
+            });
     }
 
-    private showToast = () => {
-        const toast = this.parentNode?.querySelector('toast-box') as Toast;
-        toast.text = "Document removed succesfully.";
-        toast.show()
-        console.log(toast);
-    }
 
     private handleDeleteButton = () => {
         this.openConfirmBox();
@@ -122,7 +123,9 @@ export class DocumentDetails extends LitElement {
         }
         if (!this.document) {
             return html`
-            <div class="container">Loading</div>`;
+            <div class="spinner">
+                <spinner-box></spinner-box>
+            </div>`;
         }
 
         return html`
@@ -147,7 +150,15 @@ export class DocumentDetails extends LitElement {
                 </section>
         
                 <div class="viewer">
-                    <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
+                    ${this.markdownDescription ? html`
+                        <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
+                    ` :
+                html`
+                    <div class="spinner">
+                        <spinner-box></spinner-box>
+                    </div>
+                    `}
+                    
                 </div>
                 <p class="views">${this.document.views} views</p>
             </div>
@@ -156,7 +167,8 @@ export class DocumentDetails extends LitElement {
     }
 
     static get styles() {
-        return [Styles.VARIABLES, Styles.LARGE_CARD, css`
+        return [Styles.VARIABLES, Styles.LARGE_CARD, Styles.SPINNER,
+        css`
         .container{
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;

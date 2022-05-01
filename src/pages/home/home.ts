@@ -10,6 +10,7 @@ import { Icons } from '../../common/icons';
 import { LinkTo, PathVariable, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
 import './document-element'
+import '../../common/spinner'
 import KDatasource from '../../config/configuration';
 
 @customElement('home-page')
@@ -96,13 +97,17 @@ export class Home extends LitElement {
             </div>
             `;
         } else {
-            return html`<div class="content-main"><p> Loading </p></div>`;
+            return html`
+            <section class="spinner">
+                <spinner-box></spinner-box>
+            </section>`;
         }
 
     }
 
     static get styles() {
-        return [Styles.VARIABLES, css`
+        return [Styles.VARIABLES, Styles.SPINNER, css`
+        
         .content-main{ display: flex; justify-content: center; flex-direction: column; padding: 0 1rem;} 
         .load-more{color: var(--secondary-text-color); text-align: center;  display: flex; flex-direction: column; align-items: center; margin: 1rem auto;  transition: all 0.5s ease-out}
         .load-more:hover > p > svg { fill: var(--textColor); }

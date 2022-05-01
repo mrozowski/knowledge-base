@@ -6,6 +6,7 @@ import { MarkdownStyles } from '../../common/markdown-styles';
 import { Button, ButtonType } from '../../common/button';
 import { MarkdownCode as MdCode } from './markdown-code';
 import { Styles } from '../../common/styles';
+import { ShowToast } from '../../common/toast/toast';
 
 @customElement('edit-section')
 export class MarkdownEditor extends LitElement {
@@ -120,7 +121,7 @@ export class MarkdownEditor extends LitElement {
             </section>
         
             <textarea data-gramm="false" data-gramm_editor="false" data-enable-grammarly="false" spellcheck="false"
-                @keyup=${(e) => this.textareaListener(e)} class=${this.isPreview ? "invisible" : ""} ></textarea>
+                @keydown=${(e) => this.textareaListener(e)} class=${this.isPreview ? "invisible" : ""} ></textarea>
         
             <div class=${this.isPreview ? "preview" : "invisible"}>
                 ${this.isPreview ? this.getPreview() : null}
@@ -133,7 +134,7 @@ export class MarkdownEditor extends LitElement {
         return [Styles.VARIABLES, css`
 
         .editor-card{
-            
+            min-width: 41.5rem
         }
 
         textarea{

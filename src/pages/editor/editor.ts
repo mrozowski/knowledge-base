@@ -6,18 +6,23 @@ import { Document } from '../../model/document';
 import { Category } from '../../model/category';
 import { v4 as uuidv4 } from 'uuid';
 import './markdown-editor'
+import '../../common/switch'
 import { Styles } from '../../common/styles';
 import { ButtonType } from '../../common/button';
 import KDatasource from '../../config/configuration';
 import { GoBack, LinkTo, PathVariable, Properties, ReplaceTo } from '../../system/router';
 import { Pages } from '../../page-definition';
 import { findPhotosInContent } from '../../common/functions';
+import { ShowToast, ShowWarningToast } from '../../common/toast/toast';
+import { Switch } from '../../common/switch';
 
 
 
 @customElement('editor-page')
 export class Editor extends LitElement {
 
+    private static SAVED_MESSAGE: string = "Document saved.";
+    private static SAVED_ERROR_MESSAGE: string = "Failed to save the document.";
     private content: string = Editor.getDefaultTemplate();
     private tags: string[] = new Array();
     private photos: string[] = new Array();
@@ -39,7 +44,7 @@ export class Editor extends LitElement {
             }
         }
 
-        if (this.mContent && this.document) {
+        if (this.isEditingExistingDocument()) {
             // Edit existing document
 
             this.setDocumentValues();
@@ -52,11 +57,13 @@ export class Editor extends LitElement {
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
         const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
 
         title.value = this.document!.title;
         category.value = this.document!.category;
         tags.value = this.document!.tags.join(", ");
         this.content = this.mContent;
+        publicSwitch.switchState = this.document!.isPublic;
         this.photos = findPhotosInContent(this.content);
     }
 
@@ -66,6 +73,7 @@ export class Editor extends LitElement {
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
         const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
         const parsedTags: string[] = tags.value.split("/[\s,]+/");
         const id: string = this.document!.id
 
@@ -87,12 +95,11 @@ export class Editor extends LitElement {
                 id,
                 md,
                 description,
-                this.document!.isPublic
+                publicSwitch.switchState
             );
 
             KDatasource.modifyDocument(document).then(() => {
-                console.log("Document modified");
-                // show some prompt 
+                ShowToast(Editor.SAVED_MESSAGE);
                 window.history.back();
                 ReplaceTo(Pages.DOCUMENT, PathVariable.create(id), Properties.create("id", id).add("document", document).add("markdownDescription", this.content));
             })
@@ -106,10 +113,7 @@ export class Editor extends LitElement {
         const editedPhotos = findPhotosInContent(this.content);
         const removedPhotos = this.getRemovedPhotos(editedPhotos);
         if (removedPhotos.length == 0) return;
-
-        removedPhotos.forEach(photoName => {
-            KDatasource.removePicture(photoName);
-        })
+        KDatasource.removePictures(removedPhotos);
     }
 
     /** 
@@ -130,6 +134,7 @@ export class Editor extends LitElement {
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
         const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
         const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
         const parsedTags: string[] = tags.value.split("/[\s,]+/");
         const id: string = uuidv4();
         const description = this.parseDescription(this.content);
@@ -150,22 +155,40 @@ export class Editor extends LitElement {
                 id,
                 md,
                 description,
-                true
+                publicSwitch.switchState
             );
 
             KDatasource.createNewIssue(document).then(e => {
-                console.log("Issue created");
+                ShowToast(Editor.SAVED_MESSAGE);
                 GoBack();
+            }).catch(e => {
+                ShowWarningToast(Editor.SAVED_ERROR_MESSAGE);
             });
+        }).catch(e => {
+            ShowWarningToast(Editor.SAVED_ERROR_MESSAGE);
         });
     }
 
+    private isEditingExistingDocument = (): boolean => {
+        return this.mContent && this.document;
+    }
+
     onSaveClick = () => {
-        if (this.mContent && this.document) {
+        if (this.isEditingExistingDocument()) {
             this.updateDocument();
         } else {
             this.submitNewDocument();
         }
+    }
+
+    onCancelClick = () => {
+        // if (!this.isEditingExistingDocument()){
+        //     const editedPhotos = findPhotosInContent(this.content);
+        //     const removedPhotos = this.getRemovedPhotos(editedPhotos);
+        //     if (removedPhotos.length == 0) return;
+        //     KDatasource.removePictures(removedPhotos);
+        // }
+        GoBack();
     }
 
     render() {
@@ -177,20 +200,28 @@ export class Editor extends LitElement {
         <div class="container">
             <div class="card">
                 <div class="top-bar">
-                        <button-x .text=${"Cancel"} @click=${() => GoBack()} .type=${ButtonType.SECONDARY}></button-x>
+                        <button-x .text=${"Cancel"} @click=${() => this.onCancelClick()} .type=${ButtonType.SECONDARY}></button-x>
                         <button-x .text=${"Save"} @click=${this.onSaveClick}></button-x>
                 </div>
                 <div class="card-content">
                     <div class="options">
                         <label>Title 
-                            <input name="title" id="title-input"/>
+                            <input type="text" name="title" id="title-input"/>
                         </label>
                         <label>Tags  
-                            <input  type="text" id="tag-input"/>
+                            <input type="text" name="tags" id="tag-input"/>
                         </label>
-                        <label>Category
-                            <select id="category-list" class="select-card"></select>
-                        </label> 
+                        <!-- <div class="d-flex"> -->
+                            <label>Category
+                                <select id="category-list" class="select-card"></select>
+                            </label> 
+                            <label class="checkbox-label">Public
+                                <switch-box .switchState=${true}></switch-box>
+                            </label> 
+                        <!-- </div> -->
+                        
+
+                        
                     </div>
                     <edit-section .saveFileOnFly=${this.storeFile} .contentListener=${this.updateContent} .defaultContent=${this.content}></edit-section>
                 </div>
@@ -214,11 +245,20 @@ export class Editor extends LitElement {
             outline: none;
         }
 
+        switch-box{
+            margin-left: 1.7rem;
+        }
+
+        .checkbox-label{
+            display: flex;
+            align-items: center;
+        }
 
         .container{
             
             padding-left: 1.5rem !important;
             padding-right: 1.5rem !important;
+            min-width: 46.5rem;
         }
 
         .card-content{
@@ -268,6 +308,16 @@ export class Editor extends LitElement {
             -moz-box-sizing: border-box; 
             -webkit-box-sizing: border-box; 
             box-sizing: border-box; 
+        }
+
+        input[type='checkbox']{
+            height: unset;
+            width: unset;
+            padding: unset;
+            margin-top: unset;
+            display: unset;
+            vertical-align: middle;
+            position: relative;
         }
 
         #title-input{

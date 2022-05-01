@@ -64,15 +64,20 @@ export class ApiMock implements Datasource {
         return new Promise((resolve, reject) => {
             const result: Document[] = new Array();
             result.push(new Document("author", "userId", "Java", new Date(), new Date(), "Very important issue", ["a", "b"], 5, "886c4a6d-63e1-44c2-8327-a5d958eeee5d", "some/desc", "Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
-
-            resolve(result);
+            setTimeout(() => {
+                resolve(result);
+            }, 6000);
 
         });
     }
     getIssues(): Promise<Document[]> {
+
         return new Promise((resolve, reject) => {
             const result: Document[] = new Array();
-            resolve(this.issues.slice(0, this.pageSize));
+            setTimeout(() => {
+                resolve(this.issues.slice(0, this.pageSize));
+            }, 3000);
+
 
         });
     }
@@ -82,7 +87,10 @@ export class ApiMock implements Datasource {
         return new Promise((resolve, reject) => {
             const result = this.issues.filter(e => e.id === id);
             if (result.length > 0) {
-                resolve(result[0]);
+                setTimeout(() => {
+                    resolve(result[0]);
+                }, 5000);
+
             } else {
                 throw new Error("Not Found");
             }
@@ -131,9 +139,8 @@ export class ApiMock implements Datasource {
     createNewIssue(issue: Document): Promise<void> {
         this.issues.push(issue);
         console.log(this.issues);
-
         return new Promise((resolve, reject) => {
-            resolve();
+            reject();
         });
     }
 

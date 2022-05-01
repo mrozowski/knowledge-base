@@ -1,7 +1,6 @@
 require("@babel/polyfill");
-import { html, css, LitElement } from 'lit';
+import { html } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
-import './pages/menu';
 import { SearchOption } from './model/search-option';
 import { Controller } from './system/controller';
 import { PageModule } from './system/page';
@@ -12,7 +11,7 @@ import { DocumentDetails } from './pages/document/document-details';
 import Router from './system/router';
 import { Login } from './pages/login/login';
 import KDatasource from './config/configuration';
-import './common/toast/toast'
+import './pages/menu';
 
 @customElement('main-module')
 export class Main extends Controller {
@@ -72,8 +71,6 @@ export class Main extends Controller {
     ${PageModule(this.setHome(), Pages.HOME)}
     ${PageModule(new Editor(), Pages.EDITOR)}
     ${PageModule(new DocumentDetails(), Pages.DOCUMENT)}
-
-    <toast-box></toast-box>
       `;
   }
 }
