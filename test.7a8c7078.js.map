@@ -1,1 +1,0 @@
-{"version":3,"sources":["../src/test.ts"],"names":[],"mappings":";AAIA,aAJA,IAAM,EAA0B,SAAS,cACvC,YAGF,EAAK,YAAc","file":"test.7a8c7078.js","sourceRoot":"..\\public","sourcesContent":["const node: HTMLSelectElement = document.querySelector(\r\n  \"#test_id\"\r\n)! as HTMLSelectElement;\r\n\r\nnode.textContent = \"TS is working :)\";\r\n"]}
