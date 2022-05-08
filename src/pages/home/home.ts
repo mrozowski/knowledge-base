@@ -12,6 +12,7 @@ import { Pages } from '../../page-definition';
 import './document-element'
 import '../../common/spinner'
 import KDatasource from '../../config/configuration';
+import { SearchOption } from '../../model/search-option';
 
 @customElement('home-page')
 export class Home extends LitElement {
@@ -22,28 +23,36 @@ export class Home extends LitElement {
     documents: Document[] = new Array();
 
     @property()
-    searchOption: any;
+    searchOption: SearchOption = SearchOption.DEFAULT;
 
-    protected firstUpdated(_changedProperties: PropertyValues<any>): void {
-        const response = KDatasource.getIssues();
-        response.then((result) => {
-            this.documents = result;
-        });
-    }
+    // protected firstUpdated(_changedProperties: PropertyValues<any>): void {
+    //     const response = KDatasource.getIssues();
+    //     response.then((result) => {
+    //         this.documents = result;
+    //     });
+    // }
 
     updated(_changedProperties) {
+        console.log("home update");
+
         if (_changedProperties.has('searchOption')) {
-            const old = _changedProperties.get('searchOption');
-            if (old && old != this.searchOption) {
-                const response = KDatasource.search(this.searchOption);
-                response.then(result => {
-                    this.documents = result;
+            const response = KDatasource.search(this.searchOption);
+            response.then(result => {
+                if (KDatasource.getPageSize() > result.length) {
+                    this.isMoreIssues = false;
+                } else {
                     this.isMoreIssues = true;
-                })
-                    .catch(error => {
-                        console.log(error);
-                    });
-            }
+                }
+                console.log("home docuemnt update. " + result.length);
+                this.documents = result;
+            })
+                .catch(error => {
+                    if (error instanceof NoMoreDocsHasBeenFound) {
+                        this.isMoreIssues = false;
+                        this.requestUpdate('documents');
+                    }
+                });
+
         }
     }
 
@@ -53,8 +62,6 @@ export class Home extends LitElement {
             response.then((result) => {
                 result.forEach(e => {
                     this.documents.push(e);
-
-
                 })
                 if (KDatasource.getPageSize() > result.length) {
                     this.isMoreIssues = false;
@@ -62,8 +69,8 @@ export class Home extends LitElement {
                     this.isMoreIssues = true;
                 }
                 this.requestUpdate('documents');
-            }).catch(e => {
-                if (e instanceof NoMoreDocsHasBeenFound) {
+            }).catch(error => {
+                if (error instanceof NoMoreDocsHasBeenFound) {
                     this.isMoreIssues = false;
                     this.requestUpdate('documents');
                 }
@@ -71,10 +78,19 @@ export class Home extends LitElement {
         }
     }
 
+    private isLoading(): boolean {
+        return this.documents.length === 0 && this.isMoreIssues;
+    }
 
     render() {
         console.log("home render");
-        if (this.documents.length > 0) {
+        if (this.isLoading()) {
+            return html`
+            <section class="spinner">
+                <spinner-box></spinner-box>
+            </section>`;
+
+        } else {
             return html`
             <div class="content-main">
                 ${this.documents.map((document) => html`<issue-element class="issue" 
@@ -91,16 +107,11 @@ export class Home extends LitElement {
                 </issue-element>`)}
 
                 <div class="${this.isMoreIssues ? "cursor " : ""} load-more " @click=${this.loadMore}>
-                ${this.isMoreIssues ? "Load more" : "No more documents found."}
+                ${this.isMoreIssues ? "Load more" : "There is no more documents."}
                     <p class=${this.isMoreIssues ? "" : "invisible"}>${unsafeHTML(Icons.arrowDown)}</p>
                 </div>
             </div>
             `;
-        } else {
-            return html`
-            <section class="spinner">
-                <spinner-box></spinner-box>
-            </section>`;
         }
 
     }
@@ -116,6 +127,10 @@ export class Home extends LitElement {
         .cursor {cursor: pointer;}
         .invisible{ visibility: hidden}
         .issue{flex-grow: 1;}
+
+        @media (max-width: 768px){
+            .content-main{ padding: 0 0.75rem;} 
+        }
         `]
     }
 }

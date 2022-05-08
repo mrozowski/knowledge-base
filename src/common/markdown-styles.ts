@@ -105,6 +105,28 @@ export class MarkdownStyles extends Styles {
             box-sizing: content-box;
             background-color: var(--color-canvas-default);
         }
+
+        @media (max-width: 768px){
+            .markdown-body{
+                font-weight: 300;
+                
+            }
+            .markdown-body blockquote{
+                padding: 0 0.8em;
+            }
+
+            .markdown-body .highlight pre, .markdown-body pre{
+                padding: 0.8em;
+            }
+
+            ul{
+                padding: 0.5em 1.3em;
+            }
+
+            ol{
+                padding: 0.5em 1.3em;
+            }
+        }
         `];
     }
 }

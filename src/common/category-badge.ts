@@ -21,6 +21,7 @@ export class CategoryBadge extends LitElement {
             case Category.Python: return 'python';
             case Category.Servers: return 'servers';
             case Category.Other: return 'others';
+            default: return 'default';
         }
     }
 
@@ -52,6 +53,15 @@ export class CategoryBadge extends LitElement {
             user-select: none;
         }
 
+        @media (max-width: 768px){
+            .category-badge{
+                width: 5rem;
+                height: 1.8rem;
+                line-height: 1.8rem;
+                font-size: 0.9em;
+            }
+        }
+
         .java{
             background-color: var(--category-java);
         }
@@ -81,6 +91,9 @@ export class CategoryBadge extends LitElement {
         }
         .others{
             background-color: var(--category-other);
+        }
+        .default{
+            background-color: gray;
         }
         `];
     }

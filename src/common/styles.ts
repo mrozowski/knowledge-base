@@ -18,7 +18,7 @@ export class Styles extends LitElement {
             --category-android: #799A34;
             --category-bash: #793DA8;
             --category-css: #4094A7;
-            --category-java: #A5813C;
+            --category-java: #b49940;
             --category-python: #0F887A;
             --category-other: #A74C40;
             --category-servers: #98389A;
@@ -54,6 +54,12 @@ export class Styles extends LitElement {
             box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.25);
             border-radius: 8px;
             padding: 1rem;
+        }
+
+        @media (max-width: 768px){
+            .card{
+                padding: 0.8rem;
+            }
         }
     `
 

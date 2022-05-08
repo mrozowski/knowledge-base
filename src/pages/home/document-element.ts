@@ -13,7 +13,7 @@ export class IssueElement extends LitElement {
     @property()
     title!: string;
 
-    @property()
+    @property({ type: Object })
     createdAt!: Date;
 
     @property({ type: Array })
@@ -47,7 +47,7 @@ export class IssueElement extends LitElement {
                     <p class="issue-content">${this.description}</p>
                 </div>
                 <div class="card-info">
-                    <p class="issue-date">${new Date(this.createdAt).toLocaleDateString()}</p>
+                    <p class="issue-date">${new Date(this.createdAt).toLocaleDateString('pl-PL', { day: '2-digit', month: 'numeric', year: 'numeric' })}</p>
                     <category-badge class="cat" .category=${this.category}></category-badge>
                 </div>
             </div>
@@ -100,9 +100,12 @@ export class IssueElement extends LitElement {
 
         .title{
             margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            text-overflow:ellipsis;
+            overflow:hidden;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            white-space: normal;
         }
 
         .issue-date{
@@ -118,7 +121,47 @@ export class IssueElement extends LitElement {
             -webkit-line-clamp: 3;
             -webkit-box-orient: vertical;
             white-space: normal;
-            color: var(--secondary-text-color)
+            color: var(--secondary-text-color);
+            
+        }
+
+        @media (max-width: 768px){
+            .card{
+                min-width: 18rem;
+                height: fit-content;
+            }
+
+            .card-description{
+                width: 100%;
+            }
+
+            .card-content{
+                flex-direction: column;
+            }
+
+            .card-info{
+                display: flex;
+                align-self: flex-end;
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                height: 100%;
+            }
+
+            .issue-date{
+                margin-right: 1rem;
+                font-size: 0.9em;
+            }
+
+            .issue-content{
+                -webkit-line-clamp: 5;
+                font-weight: 300;
+            }
+
+            .title{
+                font-size: 1rem;
+            }
+            
         }
 
         `];

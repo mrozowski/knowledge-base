@@ -38,6 +38,7 @@ export abstract class Controller extends LitElement {
 
     private handleRouterEvent = () => {
         this.requestUpdate();
+        window.scrollTo(0, 0);
     }
 
     private historyChangeEvent = (event) => {

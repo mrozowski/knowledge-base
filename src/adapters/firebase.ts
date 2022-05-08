@@ -27,12 +27,8 @@ const auth = getAuth();
 
 auth.onAuthStateChanged(function (user) {
   if (user) {
-    // User is signed in.
-    console.log("user was lagged in");
     Storage.setAsLoggedIn(user.email!);
-
   } else {
-    console.log("User logged out");
     Storage.setAsLoggedOut();
   }
 });
@@ -46,10 +42,8 @@ class FirebaseOrder {
 export class FirebaseApi implements Datasource {
 
   constructor(
-    public readonly pageSize: number = 3,
+    public readonly pageSize: number = 7,
     private lastDoc?: DocumentData) { }
-
-
 
 
   getCurrentUser(): UserAccount | undefined {
@@ -73,10 +67,6 @@ export class FirebaseApi implements Datasource {
             return new UserAccount(_user.email!, _user.displayName!, _user.uid);
           })
           .catch((error) => {
-            const errorCode = error.code;
-            const errorMessage = error.message;
-            console.log(errorCode);
-            console.log(errorMessage);
             throw new Error();
           });
       })
@@ -278,6 +268,8 @@ export class FirebaseApi implements Datasource {
     querySnapshot.forEach((issues) => {
       response.push(FirebaseApi.issueMapper(issues.data()))
     });
+
+    if (response.length === 0) throw new NoMoreDocsHasBeenFound();
     return response;
   }
 

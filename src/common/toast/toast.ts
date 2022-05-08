@@ -1,8 +1,7 @@
-import { css, html, LitElement, TemplateResult } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Styles } from '../styles';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
-import { ButtonType } from '../button';
 
 
 type ToastType = "message" | "warning"
@@ -50,8 +49,6 @@ export class Toast extends LitElement {
     render() {
         return html`
         <div class="container" >
-            ${console.log(this.elements)
-            }
             ${this.elements.map(toast => html`
                 <div class=${this.toastStyle(toast)}>
                     <div class="toast-body">
@@ -64,7 +61,7 @@ export class Toast extends LitElement {
                     </div>
                 </div>
                 `
-            )}
+        )}
         </div>
         `
     }

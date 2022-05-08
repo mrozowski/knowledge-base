@@ -1,6 +1,5 @@
-import { css, CSSResult, html, LitElement, TemplateResult } from "lit";
+import { css, CSSResult, html, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
-import { Styles } from "../styles";
 import { Category } from "../../model/category";
 import { DateFilter, DateOption, OrderBy, SearchOption } from "../../model/search-option";
 import { Popup } from "./popup";
@@ -88,9 +87,11 @@ export class FilterPopup extends Popup {
             </div>
             
             <div class="date-tags">
-                <span class="type">Date</span>
-                <label> <span>Older than</span> <input id="date-input-filter" type="date" name="date" /></label>
-
+                <div class="date-section">
+                    <span class="type">Date<br></span>
+                    <span class="sub-type">Older than</span> 
+                    <label> <input id="date-input-filter" type="date" name="date" /></label>
+                </div>
                 <span class="type">Tags</span>
                 <label><input id="tag-input-filter" type="text" name="tags" /></label>
             </div>
@@ -123,8 +124,21 @@ export class FilterPopup extends Popup {
             position: relative;
         }
 
+        .date-section{
+            margin-bottom: 1rem;
+        }
+
         .field-direction{
             border-left: gray solid 3px;
+            padding-left: 1rem;
+        }
+
+        .Sort{
+            padding-left: 1rem;   
+        }
+
+        .date-tags{
+            margin-right: 1rem;
         }
 
         .sub-container {  
@@ -138,13 +152,45 @@ export class FilterPopup extends Popup {
                 "Category date-tags field-direction";
         }
 
+
+
+        .title { font-size: 1.4rem;}
+        .sub-type{ font-weight: 200; font-size: 90%;}
         .Filter { grid-area: Filter; }
         .Sort { grid-area: Sort; }
         .Category { grid-area: Category; }
         .field-direction { grid-area: field-direction; }
         .date-tags { grid-area: date-tags; }
+        
+        @media (max-width: 768px){
+            .sub-container {  
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                grid-template-rows: 0.3fr 1.7fr 0.3fr 0.7fr;
+                gap: 0px 0px;
+                grid-auto-flow: row;
+                grid-template-areas:
+                    "Filter Filter"
+                    "Category date-tags"
+                    "Sort Sort"
+                    "field-direction field-direction";
+            }
+            .Sort{
+                margin: 1rem 0;
+                padding-left: 0;  
+                padding-top: 0.5rem;
+                border-top: gray solid 3px;
+            }
+            .field-direction{
+                border-left: none;
+                padding-left: 0; 
+            }
 
-        `
+            .date-tags{
+                margin-right: 0;
+            }
+        }
+        `;
     }
 
     private getCategoryList(): TemplateResult<1> {

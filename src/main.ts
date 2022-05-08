@@ -16,6 +16,7 @@ import './pages/menu';
 @customElement('main-module')
 export class Main extends Controller {
 
+  //private home: Home = new Home();
   constructor() {
     super();
     //this.setDefault404Page(Pages.NOT_FOUND);

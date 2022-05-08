@@ -1,5 +1,5 @@
 import { css, html, LitElement, TemplateResult } from 'lit';
-import { customElement, property } from 'lit/decorators.js';
+import { property } from 'lit/decorators.js';
 import { Styles } from '../styles';
 import { ButtonType } from '../button';
 
@@ -27,7 +27,7 @@ export abstract class Popup extends LitElement {
     render() {
         return html`
         <div class=${this.open ? "container" : "hidden"} >
-        <div class="overlay"></div>
+            <div class="overlay"></div>
             <div class="popup-card">
                 <div class="top-bar">
                     <button-x .text=${"Cancel"} @click=${this.close} type=${ButtonType.SECONDARY}></button-x>
@@ -57,7 +57,8 @@ export abstract class Popup extends LitElement {
                 color: var(--textColor);
                 position: absolute;
                 margin: 0 auto;
-                width: 30rem;
+                width: 95%;
+                max-width: 30rem;
                 z-index: 10;
                 top: 12%;
                 right: 0;
@@ -90,7 +91,7 @@ export abstract class Popup extends LitElement {
 
             .box-content{
                 padding: 0.9rem 1rem;
-            }       
+            }    
        `]
     }
 }

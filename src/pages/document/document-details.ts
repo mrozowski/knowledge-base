@@ -11,7 +11,6 @@ import { Styles } from '../../common/styles';
 import KDatasource from '../../config/configuration';
 import { GoBack, LinkTo, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
-import { CompoundDocument } from '../../model/compact-document';
 import { findPhotosInContent } from '../../common/functions';
 import { ShowToast, ShowWarningToast } from '../../common/toast/toast';
 
@@ -46,7 +45,7 @@ export class DocumentDetails extends LitElement {
             result.then(issue => {
                 this.document = issue;
                 this.getContent(this.document.content);
-            }).catch(error => {
+            }).catch(() => {
                 this.isError = true;
                 this.errorDescription = `Could not find document with id: ${this.id}`;
                 this.requestUpdate();
@@ -84,10 +83,10 @@ export class DocumentDetails extends LitElement {
                     ShowToast(DocumentDetails.REMOVED_MESSAGE);
                     GoBack();
                 })
-                .catch(e => {
+                .catch(() => {
                     ShowWarningToast(DocumentDetails.REMOVED_ERROR_MESSAGE);
                 }))
-            .catch(e => {
+            .catch(() => {
                 ShowWarningToast(DocumentDetails.REMOVED_ERROR_MESSAGE);
             });
     }
@@ -100,8 +99,14 @@ export class DocumentDetails extends LitElement {
     optionButtons = () => {
         if (this.isDocumentBelongToCurrentUser()) {
             return html`
-            <button-x type=${ButtonType.SECONDARY} .text=${"Delete"} @click=${() => this.handleDeleteButton()}></button-x>
             <button-x 
+                class="option-button"
+                .type=${ButtonType.SECONDARY} 
+                .text=${"Delete"} 
+                @click=${() => this.handleDeleteButton()}>
+            </button-x>
+            <button-x 
+                class="option-button"
                 type=${ButtonType.SECONDARY} 
                 .text=${"Edit"}
                 @click=${() => LinkTo(Pages.EDITOR, Properties.create("document", this.document).add("mContent", this.markdownDescription))}>
@@ -132,35 +137,30 @@ export class DocumentDetails extends LitElement {
         <popup-box></popup-box>
         
         <div class="container">
-        <div class="card">
+            <div class="card">
                 <div class="top-bar">
                     <button-x .text=${"Back"} @click=${() => GoBack()}></button-x>
                     <div class="separator"></div>
 
                     ${this.optionButtons()}
                 </div>
-            <div class="card-content">
-                <h1 class="title">${this.document.title}</h1>
-                
-                <section>
-                    <span class="tags"> ${this.document.tags.join(", ")} </span>
-                    <div class="separator"></div>
-                    <span class="created-date"> ${new Date(this.document.createdAt).toLocaleDateString()} </span>
-                    <category-badge .category=${Category[this.document.category]}></category-badge>
-                </section>
-        
-                <div class="viewer">
-                    ${this.markdownDescription ? html`
-                        <markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>
-                    ` :
-                html`
-                    <div class="spinner">
-                        <spinner-box></spinner-box>
-                    </div>
-                    `}
+                <div class="card-content">
+                    <h1 class="title">${this.document.title}</h1>
                     
+                    <section>
+                        <span class="tags"> ${this.document.tags.join(", ")} </span>
+                        <div class="separator"></div>
+                        <span class="created-date"> ${new Date(this.document.createdAt).toLocaleDateString('pl-PL', { day: '2-digit', month: 'numeric', year: 'numeric' })} </span>
+                        <category-badge .category=${Category[this.document.category]}></category-badge>
+                    </section>
+            
+                    <div class="viewer">
+                        ${this.markdownDescription ? html`<markdown-viewer .markdownContent=${this.markdownDescription}></markdown-viewer>`
+                :
+                html`<div class="spinner"> <spinner-box></spinner-box> </div>`}
+                    </div>
+                    <p class="views">${this.document.views} views</p>
                 </div>
-                <p class="views">${this.document.views} views</p>
             </div>
         </div>
         `
@@ -170,13 +170,13 @@ export class DocumentDetails extends LitElement {
         return [Styles.VARIABLES, Styles.LARGE_CARD, Styles.SPINNER,
         css`
         .container{
-            padding-left: 1.5rem !important;
-            padding-right: 1.5rem !important;
+            padding-left: 1.0rem !important;
+            padding-right: 1.0rem !important;
         }
         .card-content{
-            padding-right: 18px !important;
-            padding-left: 18px !important;
-            padding-bottom: 18px !important;
+            padding-right: 1rem !important;
+            padding-left: 1rem !important;
+            padding-bottom: 1rem !important;
         }
 
         .top-bar{
@@ -194,7 +194,7 @@ export class DocumentDetails extends LitElement {
             align-items: center;
             
             border-bottom: solid 3px var(--card-background-lighter);
-            padding-bottom: 1rem;
+            padding: 0 1rem 1rem 1rem;
         }
 
         .viewer{
@@ -205,14 +205,6 @@ export class DocumentDetails extends LitElement {
         section > span{
             font-weight: 300;
             color: var(--secondary-text-color);
-        }
-
-        .tags{
-            margin-left: 1rem;
-        }
-
-        category-badge{
-            margin-right: 1rem;
         }
 
         .views{
@@ -237,19 +229,59 @@ export class DocumentDetails extends LitElement {
             margin-right: 1rem;
         }
 
-        @media (min-width: 768px){
-            .issue-card-details {
+        @media (max-width: 768px){
+            .container{
+                padding-left: 0.75rem !important;
+                padding-right: 0.75rem !important;
+            }
 
-                padding-right: 24px !important;
-                padding-left: 24px !important;
+            .card-content{
+                padding-right: 0.8rem !important;
+                padding-left: 0.8rem !important;
+                padding-bottom: 0.8rem !important;
+            }
+
+            .title{
+                margin-left: 0;
+                margin-right: 0;
+                font-size: 1.5rem;
+            }
+
+            section{
+                padding: 0 0.2rem 0.8rem 0.2rem;
+                flex-wrap: wrap;
+            }
+
+            .tags{
+                align-self: start;
+                width: 100%;
+                margin-bottom: 0.5rem;
+            }
+
+            .created-date{
+                flex-grow: 1;
+                text-align: right;
+            }
+            
+            .viewer{
+                margin: 0;
+            }
+
+            .option-button{
+                display: none;
+            }
+
+            .views{
+                margin-right: 0.2rem;
             }
         }
 
+        @media (min-width: 768px){
+
+        }
+
         @media (min-width: 1012px){
-            .issue-card-details {
-                padding-right: 32px !important;
-                padding-left: 32px !important;
-            }
+
        }
         `];
     }

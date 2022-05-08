@@ -1,4 +1,4 @@
-import { SearchOption } from "../model/search-option";
+import { DateOption, SearchOption } from "../model/search-option";
 import { Datasource } from "../model/datasource";
 import { Document } from "../model/document";
 import { UserAccount } from "../model/user";
@@ -60,13 +60,46 @@ export class ApiMock implements Datasource {
     getPageSize(): number {
         return this.pageSize;
     }
+
+    isSearchedDocument(search: SearchOption, doc: Document) {
+        let category = false;
+        let title = false;
+        let tag = false;
+        let date = false
+
+        if (search.isCategories()) {
+            search.categories.forEach(cat => {
+                if (doc.category == cat) category = true;
+            })
+        } else {
+            category = true;
+        }
+
+        if (search.isDate()) {
+            if (search.date?.option == DateOption.NEWER) {
+                if (doc.createdAt >= search.date.date) date = true;
+            } else {
+                if (doc.createdAt <= search.date?.date!) date = true;
+            }
+        } else {
+            date = true;
+        }
+
+        if (search.isTitle()) {
+            if (doc.title.includes(search.title)) title = true;
+        } else {
+            title = true;
+        }
+        return category && title && date;
+    }
+
     search(searchOption: SearchOption): Promise<Document[]> {
         return new Promise((resolve, reject) => {
-            const result: Document[] = new Array();
-            result.push(new Document("author", "userId", "Java", new Date(), new Date(), "Very important issue", ["a", "b"], 5, "886c4a6d-63e1-44c2-8327-a5d958eeee5d", "some/desc", "Donec ornare dui metus, ut tincidunt erat bibendum in. Pellentesque egestas leo nibh, consequat vulputate leo porttitor sed.", true));
+            const result = this.issues.filter(e => this.isSearchedDocument(searchOption, e));
+
             setTimeout(() => {
                 resolve(result);
-            }, 6000);
+            }, 300);
 
         });
     }
@@ -76,7 +109,7 @@ export class ApiMock implements Datasource {
             const result: Document[] = new Array();
             setTimeout(() => {
                 resolve(this.issues.slice(0, this.pageSize));
-            }, 3000);
+            }, 100);
 
 
         });
@@ -89,7 +122,7 @@ export class ApiMock implements Datasource {
             if (result.length > 0) {
                 setTimeout(() => {
                     resolve(result[0]);
-                }, 5000);
+                }, 100);
 
             } else {
                 throw new Error("Not Found");

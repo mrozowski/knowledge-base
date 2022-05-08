@@ -13,7 +13,6 @@ import { Pages } from '../page-definition';
 export class TopMenu extends LitElement {
 
   private searchText: string = "";
-
   setSearchText = (e: any) => {
     this.searchText = e.target.value
   }
@@ -29,6 +28,9 @@ export class TopMenu extends LitElement {
 
   @property()
   logout: any
+
+  @property({ type: Boolean })
+  searchBoxOpen: boolean = false;
 
   pressedKey = (e: KeyboardEvent) => {
     // fix it later
@@ -49,6 +51,10 @@ export class TopMenu extends LitElement {
     popupBox.open = true;
   }
 
+  private openMobileSearchBox = () => {
+    this.searchBoxOpen = !this.searchBoxOpen;
+  }
+
   searchBar() {
     return html`
     <div class="bar-wrap">
@@ -62,12 +68,52 @@ export class TopMenu extends LitElement {
         </button-x>
         <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What do you need today?">
         <div class="searchButton" @click=${() => this.searchIssue(this.searchText)} >
-          <ion-icon name="search-outline" size="large"></ion-icon>
+            <div> ${unsafeHTML(Icons.search)} </div>
         </div>
       </div>
     </div>
     `
   }
+
+  mobileSearchBar() {
+    if (!this.searchBoxOpen) { return null; }
+    return html`
+    <div class="mobile-search">
+      <div class="bar-wrap-mobile">
+        <div class="search">
+          <div class="mobile-search-button" @click=${() => this.searchIssue(this.searchText)} >
+              <div> ${unsafeHTML(Icons.search)} </div>
+          </div>
+          <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What do you need today?">
+        </div>
+      </div>
+    </div>
+    `
+  }
+
+  mobileButtons() {
+    return html`
+    <div class="mobile-buttons-section">
+        <button-x 
+          class="mobile-btn"
+          .type=${ButtonType.LARGE} 
+          .text=${html`${unsafeHTML(Icons.filter)}`}  
+          @click=${this.openFilterBox}  
+          title="filter">
+        </button-x>
+
+        <button-x 
+          class="mobile-btn"
+          .type=${ButtonType.LARGE} 
+          .text=${html`${unsafeHTML(Icons.search)}`}  
+          @click=${this.openMobileSearchBox}  
+          title="search">
+        </button-x>
+    </div>
+    `
+  }
+
+
 
   loginButton() {
     if (this.isLoggedIn) {
@@ -82,14 +128,17 @@ export class TopMenu extends LitElement {
      <popup-filter></popup-filter> 
     <nav>
       <div class="menu">
-      <div class="logo">${unsafeHTML(Icons.logo)}</div>
-      
-      ${this.searchBar()}
-      <div class="button-section">
-        <button-x @click=${() => LinkTo(Pages.EDITOR)} text="Create" .type=${ButtonType.STANDARD} class=${this.isLoggedIn ? "" : "hidden"}></button-x>
-        ${this.loginButton()}
+        <div class="logo">${unsafeHTML(Icons.logo)}</div>
+
+        <div class="search-large">${this.searchBar()}</div>
+        <div class="button-section">
+          ${this.mobileButtons()}
+          <button-x @click=${() => LinkTo(Pages.EDITOR)} text="Create" .type=${ButtonType.STANDARD} class="button-create ${this.isLoggedIn ? "" : "hidden"}"></button-x>
+          ${this.loginButton()}
+        </div>
+        
       </div>
-      </div>
+      ${this.mobileSearchBar()}
     </nav>   
     `;
   }
@@ -101,6 +150,7 @@ export class TopMenu extends LitElement {
       height: 4rem;
       background-color: var(--main-accent-color);
       margin-bottom: 1rem;
+      z-index: 100;
     }
 
     .menu {
@@ -110,20 +160,20 @@ export class TopMenu extends LitElement {
       justify-content: space-between;
     }
 
+    .mobile-search, .mobile-buttons-section{
+      display: none;
+    }
+
     .logo{
-      display: flex;
-      height: 100%;
       margin-left: 0.5rem;
     }
 
     .logo > svg{
-      width: 4em;
+      width: 2.8em;
+      fill: var(--secondary-text-color);
       padding-top: 5px;
     }
 
-    .filter-btn{
-      margin: 0 2%;
-    }
 
     .button-section{
       display: flex;
@@ -131,10 +181,11 @@ export class TopMenu extends LitElement {
 
     .search {
       display: flex;
+      justify-content: center;
     }
 
     .searchTerm {
-      width: 25rem;
+      width: 24rem;
       border-right: none;
       padding: 5px 10px;
       margin-left: 1rem;
@@ -169,6 +220,12 @@ export class TopMenu extends LitElement {
       transition: all 0.25s ease-out;
     }
 
+    .searchButton > div{
+      height: 1.5rem;
+      width: 1.6rem;
+      fill: var(--secondary-text-color);
+    }
+
     .searchButton:hover{
       -webkit-filter: brightness(120%);
       filter: brightness(120%);
@@ -181,6 +238,36 @@ export class TopMenu extends LitElement {
 
     .hidden {
       visibility: hidden;
+    }
+
+    @media (max-width: 768px){
+        nav { height: unset; transition: all 0.5s ease-out;}
+        .search-large{ display: none; }
+        .logo > svg{ width: 2.3em; }
+        .bar-wrap-mobile{ width: 100%; }
+        .button-create{ display: none; }
+        .searchTerm{ max-width: 25rem; width: 60%; margin-left: 0; border-radius: 0px 5px 5px 0px; font-size: 1rem; }
+        .mobile-buttons-section{ display: flex; }
+        .mobile-btn{ margin: 0 1rem;}
+        .mobile-search{
+          display: flex;
+          height: 3.4rem;
+          background-color: var(--light-accent-color);
+          align-items: center;
+          z-index: 90;
+        }
+        .mobile-search-button{
+          display: flex;
+          padding-left: 0.5rem;
+          align-items: center;
+          border-radius: 5px 0px 0px 5px;
+          background-color: var(--shade-color);
+        }
+        .mobile-search-button > div{
+          height: 1.5rem;
+          width: 1.6rem;
+          fill: var(--tertiary--text-color);
+        }
     }
     `]
   }

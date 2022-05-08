@@ -18,6 +18,7 @@ export class SearchOption {
     date: DateFilter | undefined;
     tags: string[] = []
     order: OrderBy = "Date: Newest";
+    private: boolean = false;
 
     static DEFAULT = new SearchOption();
 
@@ -28,6 +29,7 @@ export class SearchOption {
         object.title = options.title
         object.date = options.date;
         object.order = options.order;
+        object.private = options.private;
         return object;
     }
 
@@ -49,6 +51,10 @@ export class SearchOption {
 
     isDefault(): boolean {
         return !this.isTitle() && !this.isCategories() && !this.isDate() && !this.isTags && this.order == "Date: Newest";
+    }
+
+    isPrivateOnly(): boolean {
+        return this.private;
     }
 
 }
