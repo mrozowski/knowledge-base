@@ -148,11 +148,29 @@ export class MarkdownEditor extends LitElement {
             border: none;
             outline: none;
             resize: none;
-            overflow: hidden;
+            
             line-height: 1.3rem;
             background-color: rgba(0, 0, 0, 0.14);
             color: var(--textColor);
             font-family: Consolas, "Courier New", monospace;
+            cursor: auto;
+        }
+
+        textarea::-webkit-scrollbar{
+            background-color: var(--card-background);
+            width: 0.9rem;
+        }
+
+        textarea::-webkit-scrollbar-thumb{
+            background-color: var(--card-background);
+            border-radius: 8px;
+            box-shadow: 1px 3px 3px var(--shade-color);
+
+        }
+
+        textarea::-webkit-scrollbar-track{
+            background-color: var(--card-background);
+
         }
 
         .preview{
