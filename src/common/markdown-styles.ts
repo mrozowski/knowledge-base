@@ -37,6 +37,7 @@ export class MarkdownStyles extends Styles {
             font-size: 85%;
             background-color: var(--color-neutral-muted);
             border-radius: 6px;
+            line-height: 1.7rem;
         }
 
         .markdown-body pre code, .markdown-body pre tt {
