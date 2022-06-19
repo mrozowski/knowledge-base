@@ -1,7 +1,7 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, setDoc, Firestore, deleteDoc, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query, updateDoc, writeBatch } from 'firebase/firestore/lite';
-import { getStorage, FirebaseStorage, getBytes, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, UploadResult, uploadString, deleteObject } from 'firebase/storage'
-import { browserLocalPersistence, getAuth, onAuthStateChanged, sendEmailVerification, setPersistence, signInWithEmailAndPassword, updateProfile } from "firebase/auth";
+import { getFirestore, collection, getDocs, setDoc, deleteDoc, doc, Timestamp, query, where, limit, orderBy, DocumentData, startAfter, OrderByDirection, WhereFilterOp, QueryConstraint, Query, updateDoc, increment, getDoc } from 'firebase/firestore/lite';
+import { getStorage, getDownloadURL, getBlob, uploadBytes, StorageReference, ref, uploadString, deleteObject } from 'firebase/storage'
+import { browserLocalPersistence, getAuth, setPersistence, signInWithEmailAndPassword } from "firebase/auth";
 import { DocumentNotFoundError, NoMoreDocsHasBeenFound } from "../pages/home/document-exception";
 import { DateOption, OrderBy, SearchOption } from "../model/search-option";
 import { Datasource } from '../model/datasource';
@@ -41,9 +41,16 @@ class FirebaseOrder {
 
 export class FirebaseApi implements Datasource {
 
+
   constructor(
     public readonly pageSize: number = 7,
     private lastDoc?: DocumentData) { }
+
+  async incrementViews(id: string): Promise<void> {
+    const reference = doc(db, "issues", id);
+
+    updateDoc(reference, { views: increment(1) });
+  }
 
 
   getCurrentUser(): UserAccount | undefined {
@@ -67,7 +74,7 @@ export class FirebaseApi implements Datasource {
             return new UserAccount(_user.email!, _user.displayName!, _user.uid);
           })
           .catch((error) => {
-            throw new Error();
+            throw new Error(error);
           });
       })
 
@@ -84,17 +91,11 @@ export class FirebaseApi implements Datasource {
   }
 
   async getIssue(id: string): Promise<Document> {
-    const issueCollection = collection(db, 'issues');
-    let customQuery;
-    if (this.isLogin()) {
-      customQuery = query(issueCollection, where("id", "==", id));
-    } else {
-      customQuery = query(issueCollection, where("id", "==", id), where("public", "==", true));
-    }
+    const reference = doc(db, "issues", id);
+    const issues = await getDoc(reference);
 
-    const issues = await getDocs(customQuery);
-    if (issues.docs[0].data()) {
-      return FirebaseApi.issueMapper(issues.docs[0].data());
+    if (issues.data()) {
+      return FirebaseApi.issueMapper(issues.data());
     }
     throw new DocumentNotFoundError(id);
   }
@@ -192,8 +193,8 @@ export class FirebaseApi implements Datasource {
       const issueCollection = collection(db, 'issues');
       let customQuery: any;
       if (searchOption.isDefault()) {
-        if (this.isLogin()) {
-          customQuery = query(issueCollection, orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
+        if (searchOption.isPrivateOnly() && this.isLogin()) {
+
         } else {
           customQuery = query(issueCollection, where("public", "==", true), orderBy("created_at", "desc"), startAfter(this.lastDoc), limit(this.pageSize));
         }
@@ -233,7 +234,10 @@ export class FirebaseApi implements Datasource {
     const firebaseOrder = this.toFirebaseOrder(searchOption.order);
     let filters: QueryConstraint[] = [];
 
-    if (!this.isLogin()) {
+
+    if (searchOption.isPrivateOnly() && this.isLogin()) {
+      filters.push(where("public", "==", false), where("author_id", "==", this.getCurrentUser()?.id));
+    } else {
       filters.push(where("public", "==", true));
     }
 
@@ -304,7 +308,3 @@ export class FirebaseApi implements Datasource {
     );
   }
 }
-
-
-
-

@@ -32,7 +32,6 @@ export class Main extends Controller {
   searchOption: SearchOption = SearchOption.DEFAULT;
 
   searchIssue = (text: string) => {
-    console.log("Searching issue: " + text);
     this.searchTitle = text;
   }
 

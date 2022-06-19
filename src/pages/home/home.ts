@@ -33,7 +33,7 @@ export class Home extends LitElement {
     // }
 
     updated(_changedProperties) {
-        console.log("home update");
+
 
         if (_changedProperties.has('searchOption')) {
             const response = KDatasource.search(this.searchOption);
@@ -43,7 +43,7 @@ export class Home extends LitElement {
                 } else {
                     this.isMoreIssues = true;
                 }
-                console.log("home docuemnt update. " + result.length);
+
                 this.documents = result;
             })
                 .catch(error => {
@@ -83,7 +83,6 @@ export class Home extends LitElement {
     }
 
     render() {
-        console.log("home render");
         if (this.isLoading()) {
             return html`
             <section class="spinner">

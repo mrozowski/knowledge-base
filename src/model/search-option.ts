@@ -49,14 +49,13 @@ export class SearchOption {
         return this.tags.length > 0;
     }
 
-    isDefault(): boolean {
-        return !this.isTitle() && !this.isCategories() && !this.isDate() && !this.isTags && this.order == "Date: Newest";
-    }
-
     isPrivateOnly(): boolean {
         return this.private;
     }
 
+    isDefault(): boolean {
+        return !this.isTitle() && !this.isCategories() && !this.isDate() && !this.isTags && this.isPrivateOnly() && this.order == "Date: Newest";
+    }
 }
 
 

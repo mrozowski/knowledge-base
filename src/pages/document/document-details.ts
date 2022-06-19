@@ -13,6 +13,7 @@ import { GoBack, LinkTo, Properties } from '../../system/router';
 import { Pages } from '../../page-definition';
 import { findPhotosInContent } from '../../common/functions';
 import { ShowToast, ShowWarningToast } from '../../common/toast/toast';
+import { Storage } from '../../adapters/localstorage';
 
 
 @customElement('docuemnt-details-page')
@@ -20,6 +21,7 @@ export class DocumentDetails extends LitElement {
 
     private static REMOVED_MESSAGE: string = "Document removed.";
     private static REMOVED_ERROR_MESSAGE: string = "Failed to remove the document.";
+    private static MARKED_DOCUMENT_NAME = "markedDocument.";
     private errorDescription: string = "";
     private isError: boolean = false;
 
@@ -33,9 +35,26 @@ export class DocumentDetails extends LitElement {
     markdownDescription!: string;
 
 
+    private markDocument(id: string) {
+        const markedDoc = Storage.find(DocumentDetails.MARKED_DOCUMENT_NAME + id);
+        const dateNow = Date.now();
+        if (markedDoc != null) {
+            if (Date.parse(markedDoc) < dateNow) {
+                KDatasource.incrementViews(id);
+                Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME, dateNow);
+            }
+            return;
+        }
+
+        KDatasource.incrementViews(id);
+        const tomorrowDate = dateNow + (3600 * 1000 * 24);
+        Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME + id, tomorrowDate);
+    }
+
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {
         if (this.document) {
             this.getContent(this.document.content);
+            this.markDocument(this.document.id);
         } else {
             if (this.id === "") {
                 const a = window.location.href.indexOf("document/");
@@ -45,6 +64,7 @@ export class DocumentDetails extends LitElement {
             result.then(issue => {
                 this.document = issue;
                 this.getContent(this.document.content);
+                this.markDocument(this.document.id);
             }).catch(() => {
                 this.isError = true;
                 this.errorDescription = `Could not find document with id: ${this.id}`;
@@ -118,7 +138,7 @@ export class DocumentDetails extends LitElement {
 
 
     render() {
-        console.log("Details render");
+
         if (this.isError) {
             return html`
             <div class="container">
