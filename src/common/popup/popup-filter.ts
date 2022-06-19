@@ -1,5 +1,6 @@
 import { css, CSSResult, html, TemplateResult } from "lit";
 import { customElement } from "lit/decorators";
+import KDatasource from "../../config/configuration";
 import { Category } from "../../model/category";
 import { DateFilter, DateOption, OrderBy, SearchOption } from "../../model/search-option";
 import { Popup } from "./popup";
@@ -51,21 +52,26 @@ export class FilterPopup extends Popup {
         return tags.value.split(/[\s,]+/);
     }
 
+    getPrivateOnlyValue(): boolean {
+        let privateOnly: HTMLInputElement = this.shadowRoot!.querySelector("#private-input-filter") as HTMLInputElement;
+        return privateOnly.checked;
+    }
+
 
     clickOkButton(): void {
         const options: SearchOption = SearchOption.DEFAULT;
-        let categories: string[] = this.getSelectedCategories();
-        let tags: string[] = this.getSelectedTags();
-        let date = this.getSelectedDate();
-        let order = this.getSelectedOrder();
+        const categories: string[] = this.getSelectedCategories();
+        const tags: string[] = this.getSelectedTags();
+        const date = this.getSelectedDate();
+        const order = this.getSelectedOrder();
+        const isPrivateOnly = this.getPrivateOnlyValue();
 
-
-        this.getSelectedDate();
         options.categories = categories;
         options.tags = tags;
         if (date != undefined) options.date = new DateFilter(date, DateOption.OLDER);
         else options.date = undefined;
         options.order = order;
+        options.private = isPrivateOnly;
 
         this.clickAction(options);
         this.close();
@@ -87,13 +93,19 @@ export class FilterPopup extends Popup {
             </div>
             
             <div class="date-tags">
-                <div class="date-section">
+                <div class="section">
                     <span class="type">Date<br></span>
                     <span class="sub-type">Older than</span> 
                     <label> <input id="date-input-filter" type="date" name="date" /></label>
                 </div>
-                <span class="type">Tags</span>
-                <label><input id="tag-input-filter" type="text" name="tags" /></label>
+                <div class="section">
+                    <span class="type">Tags</span>
+                    <label><input id="tag-input-filter" type="text" name="tags" /></label>
+                </div>
+                <div class=${KDatasource.isLogin() ? "" : "hidden"}>
+                    <span class="type">Show private only</span>
+                    <input id="private-input-filter" type="checkbox" name="private" />
+                </div>
             </div>
             <div class="Sort">
                 <span class="title">Sort</span>
@@ -124,7 +136,7 @@ export class FilterPopup extends Popup {
             position: relative;
         }
 
-        .date-section{
+        .section{
             margin-bottom: 1rem;
         }
 
@@ -139,6 +151,10 @@ export class FilterPopup extends Popup {
 
         .date-tags{
             margin-right: 1rem;
+        }
+
+        .hiddne{
+            visibility: hidden;
         }
 
         .sub-container {  

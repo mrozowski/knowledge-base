@@ -15,6 +15,8 @@ import { Pages } from '../../page-definition';
 import { findPhotosInContent } from '../../common/functions';
 import { ShowToast, ShowWarningToast } from '../../common/toast/toast';
 import { Switch } from '../../common/switch';
+import { Storage } from '../../adapters/localstorage';
+import { TempDocument } from './temp-doc';
 
 
 
@@ -23,6 +25,7 @@ export class Editor extends LitElement {
 
     private static SAVED_MESSAGE: string = "Document saved.";
     private static SAVED_ERROR_MESSAGE: string = "Failed to save the document.";
+    private static DOCUMENT_STORAGE_NAME = "document";
     private content: string = Editor.getDefaultTemplate();
     private tags: string[] = new Array();
     private photos: string[] = new Array();
@@ -49,9 +52,38 @@ export class Editor extends LitElement {
 
             this.setDocumentValues();
             this.requestUpdate();
+        } else {
+            // check if post is saved locally
+            const doc = Storage.find(Editor.DOCUMENT_STORAGE_NAME);
+            if (doc) {
+                const tempDoc: TempDocument = JSON.parse(doc);
+                const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
+                const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
+                const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+                const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
+
+                category.value = tempDoc.category;
+                publicSwitch.switchState = tempDoc.isPublic;
+                tags.value = tempDoc.tags.join(", ");
+                title.value = tempDoc.title;
+                this.requestUpdate();
+            }
         }
     }
 
+    saveLocally() {
+        const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
+        const title: HTMLInputElement = this.shadowRoot!.querySelector("#title-input") as HTMLInputElement;
+        const tags: HTMLInputElement = this.shadowRoot!.querySelector("#tag-input") as HTMLInputElement;
+        const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
+
+        const tempDoc = new TempDocument(title.value,
+            tags.value.split("/[\s,]+/"),
+            category.value,
+            this.content,
+            publicSwitch.switchState);
+        Storage.save(Editor.DOCUMENT_STORAGE_NAME, JSON.stringify(tempDoc))
+    }
 
     setDocumentValues() {
         const category: HTMLSelectElement = this.shadowRoot!.querySelector("#category-list") as HTMLSelectElement;
@@ -78,8 +110,11 @@ export class Editor extends LitElement {
         const id: string = this.document!.id
 
 
+
         this.removeUnusedPhotos();
         const description = this.parseDescription(this.content);
+
+        if (!this.isFieldsValid(title.value, description)) return;
 
         const mdUrl = KDatasource.uploadMarkdown(this.content, id);
         mdUrl.then(md => {
@@ -104,6 +139,26 @@ export class Editor extends LitElement {
                 ReplaceTo(Pages.DOCUMENT, PathVariable.create(id), Properties.create("id", id).add("document", document).add("markdownDescription", this.content));
             })
         })
+    }
+
+    isFieldsValid(title: string, description: string) {
+        let result: boolean = true;
+        const titleError: HTMLSpanElement = this.shadowRoot!.querySelector("#title-error") as HTMLSpanElement;
+        const descriptionError: HTMLSpanElement = this.shadowRoot!.querySelector("#description-error") as HTMLSpanElement;
+        if (title.trim().length < 3) {
+            titleError.classList.remove("hidden");
+            result = false;
+        } else {
+            titleError.classList.add("hidden");
+        }
+        if (description.trim().length < 3) {
+            descriptionError.classList.remove("hidden");
+            result = false;
+        } else {
+            descriptionError.classList.add("hidden");
+        }
+
+        return result;
     }
 
     /** It removes photos that were removed during editing document.
@@ -137,7 +192,10 @@ export class Editor extends LitElement {
         const publicSwitch: Switch = this.shadowRoot!.querySelector("switch-box") as Switch;
         const parsedTags: string[] = tags.value.split("/[\s,]+/");
         const id: string = uuidv4();
+
+
         const description = this.parseDescription(this.content);
+        if (!this.isFieldsValid(title.value, description)) return;
 
         let mdUrl = KDatasource.uploadMarkdown(this.content, id);
 
@@ -192,7 +250,6 @@ export class Editor extends LitElement {
     }
 
     render() {
-        console.log("Creator render");
         if (!KDatasource.isLogin()) {
             GoBack();
         }
@@ -206,7 +263,9 @@ export class Editor extends LitElement {
                 <div class="card-content">
                     <div class="options">
                         <label>Title 
+                        <span id="title-error" class="error-message hidden">Title is invalid</span>
                             <input type="text" name="title" id="title-input"/>
+                            
                         </label>
                         <label>Tags  
                             <input type="text" name="tags" id="tag-input"/>
@@ -223,6 +282,7 @@ export class Editor extends LitElement {
 
                         
                     </div>
+                    <span id="description-error" class="error-message hidden">Add some description</span>
                     <edit-section .saveFileOnFly=${this.storeFile} .contentListener=${this.updateContent} .defaultContent=${this.content}></edit-section>
                 </div>
             </div>
@@ -240,6 +300,11 @@ export class Editor extends LitElement {
             border: none;
             padding: 0.3rem;
             width: 8em;
+        }
+        .error-message{
+            margin: 1rem;
+            color: var(--error-accent-color);
+            font-weight: 500;
         }
         .select-card:focus{
             outline: none;
@@ -334,6 +399,10 @@ export class Editor extends LitElement {
             margin-right: 0.7rem;
         }
 
+        .hidden{
+            visibility: hidden;
+        }
+
         @media (min-width: 768px){
             .card-content {
 
@@ -363,8 +432,14 @@ export class Editor extends LitElement {
 
         const descriptionStart = descriptionHeaderIndex + descriptionHeader.length + 1;
         const descriptionEnd = content.indexOf("\n\n", descriptionStart);
+        let code = "";
 
-        let code = content.substring(descriptionStart, descriptionEnd);
+        if (descriptionEnd == -1) {
+            code = content.substring(descriptionStart);
+        } else {
+            code = content.substring(descriptionStart, descriptionEnd);
+        }
+
         const wrongElement = code.indexOf("\n#", descriptionStart);
         if (wrongElement != -1) {
             code = code.substring(0, wrongElement);
@@ -398,10 +473,6 @@ export class Editor extends LitElement {
 
     private static getDefaultTemplate(): string {
         return `## Description
-
-
-
-## Solution
 
 `;
     }

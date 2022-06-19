@@ -22,7 +22,7 @@ export class Login extends LitElement {
             .then(_user => {
                 LinkTo(Pages.HOME);
             }).catch(e => {
-                console.log(e);
+                //console.log(e);
             })
     }
 

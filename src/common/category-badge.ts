@@ -19,7 +19,7 @@ export class CategoryBadge extends LitElement {
             case Category.SQL: return 'sql';
             case Category.Android: return 'android';
             case Category.Python: return 'python';
-            case Category.Servers: return 'servers';
+            case Category.Devops: return 'devops';
             case Category.Other: return 'others';
             default: return 'default';
         }
@@ -83,7 +83,7 @@ export class CategoryBadge extends LitElement {
         .android{
             background-color: var(--category-android);
         }
-        .servers{
+        .devops{
             background-color: var(--category-servers);
         }
         .ai{

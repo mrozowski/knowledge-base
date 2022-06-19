@@ -18,8 +18,6 @@ export class PopupDefault extends Popup {
     }
 
     createContent() {
-        console.log("box");
-
         return html`
         <div class="title">${this.title}</div>
         <div class="text">${this.text}</div>

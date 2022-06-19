@@ -19,5 +19,5 @@ export interface Datasource {
     getCurrentUser(): UserAccount | undefined;
     removePictures(names: string[]): Promise<void>;
     removeDocument(id: string): Promise<void>;
-    //login / logout
+    incrementViews(id: string): Promise<void>;
 }

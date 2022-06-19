@@ -113,8 +113,6 @@ class _Router {
             this.previousPage = this.currentPage;
             this.currentPage = requestedPage;
             if (this.previousPage != requestedPage) {
-                console.log("replace to " + path);
-
                 window.history.replaceState(properties, "", this.fullPrefix + path);
             }
 
