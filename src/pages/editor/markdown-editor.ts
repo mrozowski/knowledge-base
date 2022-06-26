@@ -395,45 +395,71 @@ export class MarkdownEditor extends LitElement {
     private tabEvent(myField) {
         const tab = "   ";
         var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
 
-        let endOfLine = myField.value.indexOf("\n", startPos);
-        if (endOfLine == -1) endOfLine = myField.value.length;
-
-        const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
-        const line = myField.value.substring(startOfLine, endOfLine).trim();
-        const symbol = this.findSymbol(line);
-
-        if (symbol.length > 0 && startPos - startOfLine > 1) {
-
-            myField.value = myField.value.substring(0, startOfLine + 1) + `${tab}` + myField.value.substring(startOfLine + 1);
+        if (startPos == endPos){
+            let endOfLine = myField.value.indexOf("\n", startPos);
+            if (endOfLine == -1) endOfLine = myField.value.length;
+    
+            const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+            const line = myField.value.substring(startOfLine, endOfLine).trim();
+            const symbol = this.findSymbol(line);
+    
+            if (symbol.length > 0 && startPos - startOfLine > 1) {
+    
+                myField.value = myField.value.substring(0, startOfLine + 1) + `${tab}` + myField.value.substring(startOfLine + 1);
+                myField.selectionStart = startPos + tab.length;
+                myField.selectionEnd = myField.selectionStart;
+            }
+            else {
+                myField.value = myField.value.substring(0, startPos) + `${tab}` + myField.value.substring(startPos);
+                myField.selectionStart = startPos + tab.length;
+                myField.selectionEnd = myField.selectionStart;
+            }
+        } else {
+            const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+            var text = myField.value.substring(startOfLine, endPos);
+            const textLengthBefore = text.length;
+            text = text.replaceAll("\n", `\n${tab}`)
+            const textLengthAfter = text.length;
+            myField.value = myField.value.substring(0, startOfLine) + `${tab}` + text + myField.value.substring(endPos, myField.value.length);
             myField.selectionStart = startPos + tab.length;
-            myField.selectionEnd = myField.selectionStart;
+            myField.selectionEnd = endPos + textLengthAfter - textLengthBefore + tab.length;
         }
-        else {
-            myField.value = myField.value.substring(0, startPos) + `${tab}` + myField.value.substring(startPos);
-            myField.selectionStart = startPos + tab.length;
-            myField.selectionEnd = myField.selectionStart;
-        }
+        
     }
 
     private backTabEvent(myField) {
         const tab = "   ";
         var startPos = myField.selectionStart;
+        var endPos = myField.selectionEnd;
 
-        let endOfLine = myField.value.indexOf("\n", startPos);
-        if (endOfLine == -1) endOfLine = myField.value.length;
+        if (startPos == endPos){
 
-        const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
-        const line = myField.value.substring(startOfLine, endOfLine).trim();
-        const symbol = this.findSymbol(line);
+            let endOfLine = myField.value.indexOf("\n", startPos);
+            if (endOfLine == -1) endOfLine = myField.value.length;
 
-        if (symbol.length > 0 && startPos - startOfLine > 1) {
-            const spaceLength = myField.value.indexOf(symbol, startOfLine) - startOfLine - 1;
-            let spaceToRemove = tab.length;
-            if (spaceLength < spaceToRemove) spaceToRemove = spaceLength;
-            myField.value = myField.value.substring(0, startOfLine + 1) + myField.value.substring(startOfLine + spaceToRemove + 1);
-            myField.selectionStart = startPos - spaceToRemove;
-            myField.selectionEnd = myField.selectionStart;
+            const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+            const line = myField.value.substring(startOfLine, endOfLine).trim();
+            const symbol = this.findSymbol(line);
+
+            if (symbol.length > 0 && startPos - startOfLine > 1) {
+                const spaceLength = myField.value.indexOf(symbol, startOfLine) - startOfLine - 1;
+                let spaceToRemove = tab.length;
+                if (spaceLength < spaceToRemove) spaceToRemove = spaceLength;
+                myField.value = myField.value.substring(0, startOfLine + 1) + myField.value.substring(startOfLine + spaceToRemove + 1);
+                myField.selectionStart = startPos - spaceToRemove;
+                myField.selectionEnd = myField.selectionStart;
+            }
+        } else {
+            const startOfLine = myField.value.substring(0, startPos).lastIndexOf("\n");
+            var text = myField.value.substring(startOfLine, endPos);
+            const textLengthBefore = text.length;
+            text = text.replaceAll(`\n${tab}`, `\n`)
+            const textLengthAfter = text.length;
+            myField.value = myField.value.substring(0, startOfLine) + text + myField.value.substring(endPos, myField.value.length);
+            myField.selectionStart = startPos ;
+            myField.selectionEnd = endPos - (textLengthBefore - textLengthAfter);
         }
     }
 
