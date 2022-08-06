@@ -1,12 +1,11 @@
-import { css, html, LitElement, PropertyDeclaration } from 'lit';
+import { css, html, LitElement } from 'lit';
 import { customElement, property } from 'lit/decorators.js';
 import { Icons } from '../../common/icons';
 import { unsafeHTML } from 'lit-html/directives/unsafe-html';
-import { MarkdownStyles } from '../../common/markdown-styles';
-import { Button, ButtonType } from '../../common/button';
+import { ButtonType } from '../../common/button';
 import { MarkdownCode as MdCode } from './markdown-code';
 import { Styles } from '../../common/styles';
-import { ShowToast } from '../../common/toast/toast';
+
 
 @customElement('edit-section')
 export class MarkdownEditor extends LitElement {
@@ -346,6 +345,7 @@ export class MarkdownEditor extends LitElement {
     private findSymbol(line: string): string {
         line = line.trim();
         if (line[0] === '-') return "-";
+        if (line[0] === '*') return "*";
 
         if (/^(\d+\.)( )?([\w\d.,?!@#$%^&*\(\)\[\]\-\/ ]+)?$/.test(line)) {
             const dotIndex = line.indexOf(".");
@@ -462,6 +462,32 @@ export class MarkdownEditor extends LitElement {
             myField.selectionEnd = endPos - (textLengthBefore - textLengthAfter);
         }
     }
+    
+    private backquoteEvent = (myField) => {
+        const backquote: string = `\``
+        const tripleBackquote: string = `\`\`\`` 
+        if (myField.selectionStart || myField.selectionStart == '0') {
+            var startPos = myField.selectionStart;
+            var endPos = myField.selectionEnd;
+
+            if (startPos == endPos) {
+                myField.value = myField.value.substring(0, startPos) + backquote + backquote + myField.value.substring(endPos, myField.value.length);
+                myField.selectionStart = startPos + 1;
+                myField.selectionEnd = myField.selectionStart;
+            } else {
+                var text = myField.value.substring(startPos, endPos);
+                myField.value = myField.value.substring(0, startPos) + tripleBackquote + `  \n` + text + `\n` + tripleBackquote + myField.value.substring(endPos, myField.value.length);
+                myField.selectionStart = startPos + 4;
+                myField.selectionEnd = myField.selectionStart + 1;
+            }
+
+        } else {
+            myField.value += 2;
+            this.cursor = 1;
+        }
+        
+    }
+
 
     private textareaListener = (e) => {
         this.contentListener(e.target.value);
@@ -488,11 +514,15 @@ export class MarkdownEditor extends LitElement {
             e.preventDefault();
             e.stopPropagation();
             this.tabEvent(e.target);
+        } else if (e.code === "Backquote"){
+            e.preventDefault();
+            e.stopPropagation();
+            this.backquoteEvent(e.target)
         }
     }
 
-    private previewListener = (e) => {
-        if (e.ctrlKey && e.altKey && e.code === 'KeyP') {
+    private previewListener = (e) => {        
+        if (e.ctrlKey && e.code === 'BracketLeft') {
             let target: HTMLTextAreaElement = this.shadowRoot?.querySelector("textarea") as HTMLTextAreaElement;
             if (this.isPreview) {
                 this.showEditor();

@@ -42,7 +42,7 @@ export abstract class Controller extends LitElement {
     }
 
     private historyChangeEvent = (event) => {
-        let pagePath = this.getFullPathName(); //window.location.href.replace(window.location.origin, "");
+        let pagePath = this.getFullPathName();
         const properties = event.state;
         if (properties)
             Router.linkTo2(pagePath, properties);

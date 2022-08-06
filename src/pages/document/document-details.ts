@@ -38,17 +38,16 @@ export class DocumentDetails extends LitElement {
     private markDocument(id: string) {
         const markedDoc = Storage.find(DocumentDetails.MARKED_DOCUMENT_NAME + id);
         const dateNow = Date.now();
-        if (markedDoc != null) {
-            if (Date.parse(markedDoc) < dateNow) {
-                KDatasource.incrementViews(id);
-                Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME, dateNow);
-            }
-            return;
-        }
-
-        KDatasource.incrementViews(id);
         const tomorrowDate = dateNow + (3600 * 1000 * 24);
-        Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME + id, tomorrowDate);
+        if (markedDoc != null) {
+            if (parseInt(markedDoc) < dateNow) {
+                KDatasource.incrementViews(id);
+                Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME, tomorrowDate);
+            }
+        } else {
+            KDatasource.incrementViews(id);
+            Storage.save(DocumentDetails.MARKED_DOCUMENT_NAME + id, tomorrowDate);
+        }
     }
 
     protected firstUpdated(_changedProperties: PropertyValues<any>): void {

@@ -12,11 +12,6 @@ import { Pages } from '../page-definition';
 @customElement('top-menu')
 export class TopMenu extends LitElement {
 
-  private searchText: string = "";
-  setSearchText = (e: any) => {
-    this.searchText = e.target.value
-  }
-
   @property({ type: Boolean })
   isLoggedIn: boolean = false;
 
@@ -32,17 +27,36 @@ export class TopMenu extends LitElement {
   @property({ type: Boolean })
   searchBoxOpen: boolean = false;
 
+  private isMobile: Boolean = false;
+
   pressedKey = (e: KeyboardEvent) => {
-    // fix it later
+   
+    
     if (e.code != undefined) {
       if (e.code === "Enter") {
-        //this.searchIssue(this.searchText);
+        const titleInput: HTMLInputElement = this.shadowRoot!.querySelector("#top-menu-search-bar-mobile") as HTMLInputElement;
+        if (titleInput != null) this.searchMobile();
+        else this.search();
       }
     } else if (e.keyCode != undefined) {
       if (e.keyCode == 13) {
-        //this.searchIssue(this.searchText);
+        const titleInput: HTMLInputElement = this.shadowRoot!.querySelector("#top-menu-search-bar-mobile") as HTMLInputElement;
+        if (titleInput != null) this.searchMobile();
+        else this.search();
       }
     }
+  }
+
+  private search(){
+    const titleInput: HTMLInputElement = this.shadowRoot!.querySelector("#top-menu-search-bar") as HTMLInputElement;
+    const title = titleInput.value.toLowerCase();
+    this.searchIssue(title);
+  }
+
+  private searchMobile(){
+    const titleInput: HTMLInputElement = this.shadowRoot!.querySelector("#top-menu-search-bar-mobile") as HTMLInputElement;
+    const title = titleInput.value.toLowerCase();
+    this.searchIssue(title);
   }
 
   private openFilterBox = () => {
@@ -66,8 +80,8 @@ export class TopMenu extends LitElement {
           @click=${this.openFilterBox}  
           title="filter">
         </button-x>
-        <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What do you need today?">
-        <div class="searchButton" @click=${() => this.searchIssue(this.searchText)} >
+        <input @keydown=${this.pressedKey} id="top-menu-search-bar" type="text" class="searchTerm" placeholder="What do you need today?">
+        <div class="searchButton" @click=${this.search}>
             <div> ${unsafeHTML(Icons.search)} </div>
         </div>
       </div>
@@ -81,10 +95,10 @@ export class TopMenu extends LitElement {
     <div class="mobile-search">
       <div class="bar-wrap-mobile">
         <div class="search">
-          <div class="mobile-search-button" @click=${() => this.searchIssue(this.searchText)} >
+          <div class="mobile-search-button" @click=${this.searchMobile}>
               <div> ${unsafeHTML(Icons.search)} </div>
           </div>
-          <input @change=${(e: any) => this.setSearchText(e)} @keydown=${this.pressedKey} value=${this.searchText} type="text" class="searchTerm" placeholder="What do you need today?">
+          <input @keydown=${this.pressedKey} id="top-menu-search-bar-mobile" type="text" class="searchTerm" placeholder="What do you need today?">
         </div>
       </div>
     </div>

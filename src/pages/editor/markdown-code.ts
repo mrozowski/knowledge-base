@@ -9,6 +9,7 @@ export class MarkdownCode {
     public static bulletList: string = `- `;
     public static numberedList: string = `1. `;
     public static subscript: string = `~`;
+    public static multicode: string = `\`\`\``
     public static superscript: string = `^`;
     public static table: string = `
 | header | header |

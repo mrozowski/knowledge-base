@@ -58,6 +58,7 @@ export class Main extends Controller {
   render() {
 
     if (Router.isActive(Pages.LOGIN)) {
+      // Display only login page
       return PageModule(new Login(), Pages.LOGIN);
     }
 
